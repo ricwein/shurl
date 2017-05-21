@@ -1,5 +1,6 @@
-CREATE TABLE `short_redirects` (
+CREATE TABLE `redirects` (
   `slug` varchar(64) NOT NULL DEFAULT '',
+  `url` text NOT NULL,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `expires` timestamp NULL DEFAULT NULL,
   `hits` bigint(20) unsigned NOT NULL DEFAULT '0',

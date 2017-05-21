@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use ricwein\shurl\console\Add;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+
+$application->add(new Add());
+
+$application->run();
