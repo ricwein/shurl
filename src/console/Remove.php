@@ -23,7 +23,7 @@ class Remove extends Command {
 		$this->setHelp('This command allows to disable a selected URL.');
 
 		$this->setDefinition([
-			new InputArgument('search', InputArgument::OPTIONAL, 'Search for Slug or URL which should be disabled.'),
+			new InputArgument('search', InputArgument::OPTIONAL, 'Search for Slug or URL which should be disabled'),
 		]);
 	}
 

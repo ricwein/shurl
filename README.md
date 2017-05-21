@@ -38,7 +38,7 @@ This URL can be set inside the described configfile:
 
 ```yaml
 ---
-rootURL: fance.url/shurl/
+rootURL: fancy.url/shurl/
 ```
 
 ## Adding a new URL

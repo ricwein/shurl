@@ -22,9 +22,9 @@ class Add extends Command {
 		$this->setHelp('This command adds a new URL to the shurl Database.');
 
 		$this->setDefinition([
-			new InputArgument('url', InputArgument::OPTIONAL, 'The URL which should be shortened.'),
-			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening.'),
-			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL.'),
+			new InputArgument('url', InputArgument::OPTIONAL, 'The URL which should be shortened'),
+			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening'),
+			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL'),
 		]);
 	}
 
