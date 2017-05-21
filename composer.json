@@ -3,6 +3,7 @@
     "description": "PHP based URL shortener",
     "type": "project",
     "require": {
+        "php": ">= 7.0.0",
         "usmanhalalit/pixie": "^2.0",
         "symfony/yaml": "^3.2",
         "phpfastcache/phpfastcache": "^6.0",
@@ -17,7 +18,7 @@
         }
     ],
     "minimum-stability": "dev",
-	"autoload": {
+    "autoload": {
      "psr-4": {"ricwein\\shurl\\": "src"}
-	}
+    }
 }

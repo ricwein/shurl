@@ -20,7 +20,7 @@ class Application {
 	protected $_config;
 
 	/**
-	 * @var Connection
+	 * @var QueryBuilderHandler
 	 */
 	protected $_pixie;
 
@@ -141,6 +141,8 @@ class Application {
 		if (!$url) {
 			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
 		}
+
+		$this->_pixie->table('redirects')->update(['hits' => $this->_pixie->raw('hits + 1')]);
 
 		return new URL($url->slug, $url->url, $this->_config);
 	}
