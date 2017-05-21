@@ -25,6 +25,22 @@ development: true
 
 This way it's possible, to override each single setting.
 
+You can copy an example file to start with
+
+```bash
+cp config/example.config.yml config/config.yml
+```
+
+### rootURL
+
+For some features, shurl need to know your webservers Domain and Path to shurl.
+This URL can be set inside the described configfile:
+
+```yaml
+---
+rootURL: fance.url/shurl/
+```
+
 ## Adding a new URL
 
 Adding a new URL to the shortener Server is done with the bundled CLI tool. Just run `./bin/shurl add`, and follow the instructions.
