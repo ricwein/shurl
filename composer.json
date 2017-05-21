@@ -1,0 +1,19 @@
+{
+    "name": "ricwein/shurl",
+    "description": "PHP based URL shortener",
+    "type": "project",
+    "require": {
+        "usmanhalalit/pixie": "^2.0",
+        "symfony/yaml": "^3.2",
+        "phpfastcache/phpfastcache": "^6.0",
+        "symfony/console": "3.4.x-dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Richard Weinhold",
+            "email": "git@ricwein.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
