@@ -2,11 +2,11 @@
 
 namespace ricwein\shurl\console;
 
-use ricwein\shurl\config\Config;
 use ricwein\shurl\core\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
@@ -17,13 +17,14 @@ class Add extends Command {
 
 	protected function configure() {
 
-		$this->setName('add');
+		$this->setName('url:add');
 		$this->setDescription('adds new entry.');
 		$this->setHelp('This command adds a new URL to the shurl Database.');
 
 		$this->setDefinition([
 			new InputArgument('url', InputArgument::OPTIONAL, 'The URL which should be shortened.'),
-			new InputArgument('slug', InputArgument::OPTIONAL, 'Use this slug for shortening, if given, else use a random string.'),
+			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening.'),
+			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL.'),
 		]);
 	}
 
@@ -74,17 +75,15 @@ class Add extends Command {
 
 		}
 
-		$slug = $input->getArgument('slug');
-		if (!$slug) {
+		if (null === $slug = $input->getOption('slug')) {
 
 			// @TODO add better slug generation here
 			$slug = md5($url);
 
 		}
 
-		$config = Config::getInstance();
-		$app    = new Application($config);
-		$info   = $app->addUrl($url, $slug);
+		$app  = new Application();
+		$info = $app->addUrl($url, trim($slug, '= '), $input->getOption('expires'));
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);
 		$output->writeln('Original URL:  ' . $info->getOriginal());

@@ -106,7 +106,13 @@ class Application {
 			$path = $_SERVER['REQUEST_URI'];
 
 			if (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
-				$path = str_replace(dirname($_SERVER['SCRIPT_NAME']), '', $path);
+
+				// only replace first occurence of script-name in path
+				$scriptName = dirname($_SERVER['SCRIPT_NAME']);
+				if (substr($path, 0, strlen($scriptName)) === $scriptName) {
+					$path = substr($path, strlen($scriptName));
+				}
+
 			} elseif (isset($_SERVER['DOCUMENT_URI']) && !empty($_SERVER['DOCUMENT_URI'])) {
 				$path = str_replace(dirname($_SERVER['DOCUMENT_URI']), '', $path);
 			}
@@ -128,15 +134,14 @@ class Application {
 	 */
 	public function addUrl(string $url, string $slug, string $expires = null): URL{
 		$data = [
-			'url'  => trim($url),
-			'slug' => trim($slug),
+			'url'     => trim($url),
+			'slug'    => trim($slug),
+			'expires' => ($expires !== null ? date($this->_config->timestampFormat['database'], strtotime($expires)) : null),
+			'enabled' => 1,
 		];
 
-		if ($expires !== null) {
-			$data['expires'] = date($this->_config->timestampFormat['database'], strtotime($expires));
-		}
-
 		$query = $this->_pixie->table('redirects');
+		$query->onDuplicateKeyUpdate($data);
 		$query->insert($data);
 
 		return new URL($data['slug'], $data['url'], $this->_config);
@@ -160,11 +165,21 @@ class Application {
 		}
 
 		// increment url hit counter
-		$this->_pixie->table('redirects')->update([
+		$query = $this->_pixie->table('redirects');
+		$query->where('slug', '=', $slug);
+		$query->update([
 			'hits' => $this->_pixie->raw('hits + 1'),
 		]);
 
 		return new URL($url->slug, $url->url, $this->_config);
+	}
+
+	/**
+	 * get internal Pixie Database QueryBuilder Object
+	 * @return QueryBuilderHandler
+	 */
+	public function getDB(): QueryBuilderHandler {
+		return $this->_pixie;
 	}
 
 }

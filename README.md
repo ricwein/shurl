@@ -7,7 +7,7 @@
 It's using a PDO Database Wrapper in the background, so you're not limited to MySQL!
 But even if so, this project uses prepared statements, to prevent sql injections.
 
-To init a new MySQL database, just run the queries in [ressources/database.sql](ressources/database.sql).
+To init a new MySQL database, just run the queries in [resources/database.sql](resources/database.sql).
 
 ## Configuration
 
@@ -43,5 +43,9 @@ rootURL: fance.url/shurl/
 
 ## Adding a new URL
 
-Adding a new URL to the shortener Server is done with the bundled CLI tool. Just run `./bin/shurl add`, and follow the instructions.
-For more Informations see `./bin/shurl add --help`.
+Adding a new URL to the shortener Server is done with the bundled CLI tool. Just run `./bin/shurl url:add`, and follow the instructions.
+For more Informations see `./bin/shurl url:add --help`.
+
+## Remove an URL
+
+Removing an URL from the list, is as easy as adding one. Execute `./bin/shurl url:remove` from your command line should do the job.
