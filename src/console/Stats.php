@@ -39,20 +39,24 @@ class Stats extends Command {
 		$limit = $input->getOption('limit');
 
 		$query = $app->getDB()->table('redirects');
-		$query->orderBy('hits', 'DESC');
+		$query->join('visits', 'redirects.id', '=', 'visits.url_id', 'LEFT');
+		$query->select(['redirects.*', $query->raw('COUNT(' . Config::getInstance()->database['prefix'] . 'visits.id) as hits')]);
+		$query->groupBy('redirects.id');
+		$query->orderBy(['redirects.id', 'hits'], 'DESC');
 
 		// only select currently enabled entries
 		if (!$input->getOption('all')) {
-			$query->where('enabled', '=', true);
+			$query->where('redirects.enabled', '=', true);
 			$query->where(function ($db) use ($app) {
-				$db->where($db->raw('expires > NOW()'));
-				$db->orWhereNull('expires');
+				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.expires > NOW()'));
+				$db->orWhereNull('redirects.expires');
 			});
 		}
 
 		if ($limit > 0) {
 			$query->limit((int) $limit);
 		}
+		// die($query->getQuery()->getRawSql());
 
 		$entries = [];
 		$header  = ['Hits', 'Slug', 'URL', 'created'];
@@ -66,10 +70,10 @@ class Stats extends Command {
 		foreach ($query->get() as $entry) {
 
 			$url = [
-				'hits' => $entry->hits,
-				'slug' => $entry->slug,
-				'url'  => $entry->url,
-				'date' => $entry->date,
+				'hits'   => $entry->hits,
+				'slug'   => $entry->slug,
+				'url'    => $entry->url,
+				'create' => $entry->created,
 			];
 
 			// also add full shortened URL

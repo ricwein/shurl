@@ -20,6 +20,11 @@ class Application {
 	protected $_config;
 
 	/**
+	 * @var Network
+	 */
+	protected $_network;
+
+	/**
 	 * @var QueryBuilderHandler
 	 */
 	protected $_pixie;
@@ -52,6 +57,9 @@ class Application {
 			$this->_config->database['driver'],
 			$this->_config->database
 		));
+
+		$this->_network = Network::getInstance($this->_config);
+
 	}
 
 	/**
@@ -60,7 +68,7 @@ class Application {
 	 * @throws \UnexpectedValueException
 	 */
 	public function route() {
-		$slug = $this->_getRoute();
+		$slug = $this->_network->getRoute();
 
 		if ($slug === null) {
 			throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
@@ -70,59 +78,7 @@ class Application {
 
 		$url = $this->getUrl($slug);
 
-		$this->_redirect($url);
-	}
-
-	/**
-	 * send redirect header
-	 *
-	 * this ends the current code execution!
-	 * @param URL $url
-	 * @return void
-	 */
-	protected function _redirect(URL $url) {
-
-		if ($this->_config->cache['clientRedirectCaching'] && !$this->_config->development) {
-			http_response_code(301);
-			header('Cache-Control: max-age=3600');
-		} else {
-			http_response_code(302);
-			header('Pragma: no-cache');
-			header('Cache-Control: no-cache, no-store, must-revalidate');
-			header('Expires: 0');
-		}
-
-		header('Location: ' . $url->getOriginal());
-		exit(0);
-	}
-
-	/**
-	 * fetch current route from URL
-	 * @return string|null
-	 */
-	protected function _getRoute() {
-
-		if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
-			$path = $_SERVER['REQUEST_URI'];
-
-			if (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
-
-				// only replace first occurence of script-name in path
-				$scriptName = dirname($_SERVER['SCRIPT_NAME']);
-				if (substr($path, 0, strlen($scriptName)) === $scriptName) {
-					$path = substr($path, strlen($scriptName));
-				}
-
-			} elseif (isset($_SERVER['DOCUMENT_URI']) && !empty($_SERVER['DOCUMENT_URI'])) {
-				$path = str_replace(dirname($_SERVER['DOCUMENT_URI']), '', $path);
-			}
-
-			return trim($path, '/');
-		} elseif (isset($_SERVER['PATH_INFO']) && !empty($_SERVER['PATH_INFO'])) {
-			return trim($_SERVER['PATH_INFO'], '/');
-		}
-
-		return null;
+		$this->_network->redirect($url);
 	}
 
 	/**
@@ -131,6 +87,7 @@ class Application {
 	 * @param  string $slug
 	 * @param  string|null $expires
 	 * @return URL
+	 * @throws \UnexpectedValueException
 	 */
 	public function addUrl(string $url, string $slug, string $expires = null): URL{
 		$data = [
@@ -142,7 +99,9 @@ class Application {
 
 		$query = $this->_pixie->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
-		$query->insert($data);
+		if (!$query->insert($data)) {
+			throw new \UnexpectedValueException('database insertion failed', 500);
+		}
 
 		return new URL($data['slug'], $data['url'], $this->_config);
 	}
@@ -164,12 +123,22 @@ class Application {
 			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
 		}
 
-		// increment url hit counter
-		$query = $this->_pixie->table('redirects');
-		$query->where('slug', '=', $slug);
-		$query->update([
-			'hits' => $this->_pixie->raw('hits + 1'),
-		]);
+		// handle url tracking
+		if ($this->_config->tracking['enabled']) {
+			$visit = [
+				'url_id'  => $url->id,
+				'visited' => date($this->_config->timestampFormat['database']),
+			];
+
+			// track IP, if either user doesn't send DNT, or we decided to ignore it
+			if ($this->_config->tracking['trackIP'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
+				$visit['ip'] = inet_pton($this->_network->getIPAddr());
+			}
+
+			// save visitor data
+			$query = $this->_pixie->table('visits');
+			$query->insert($visit);
+		}
 
 		return new URL($url->slug, $url->url, $this->_config);
 	}

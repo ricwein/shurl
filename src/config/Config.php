@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 class Config {
 
 	/**
-	 * @var self
+	 * @var self|null
 	 */
 	static private $__instance = null;
 
@@ -54,6 +54,12 @@ class Config {
 		'rootURL'         => 'localhost',
 		'timestampFormat' => [
 			'database' => 'Y-m-d H:i:s',
+		],
+
+		'tracking'        => [
+			'enabled'    => true,
+			'respectDNT' => true,
+			'trackIP'    => true,
 		],
 	];
 
