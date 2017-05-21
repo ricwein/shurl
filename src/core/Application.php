@@ -26,17 +26,32 @@ class Application {
 
 	/**
 	 * init new shurl Core
-	 * @param Config $config
+	 * @param Config|null $config
 	 */
-	public function __construct(Config $config) {
+	public function __construct(Config $config = null) {
 
-		// init global logger
+		// allocate config instance
+		if ($config === null) {
+			$this->_config = Config::getInstance();
+		} else {
+			$this->_config = $config;
+		}
+
+		// init new monolog logger
 		$logger = new Logger('Logger Name');
-		$logger->pushHandler(new StreamHandler(__DIR__ . '/../../' . ltrim($config->log['path'], '/'), Logger::WARNING));
+		$logger->pushHandler(new StreamHandler(
+			__DIR__ . '/../../' . ltrim($this->_config->log['path'], '/'),
+			$this->_config->log['severity']
+		));
+
+		// register as global fallback handler
 		ErrorHandler::register($logger);
 
-		$this->_config = $config;
-		$this->_pixie  = new QueryBuilderHandler(new Connection($config->database['driver'], $config->database));
+		// init new database connection and Pixie querybuilder
+		$this->_pixie = new QueryBuilderHandler(new Connection(
+			$this->_config->database['driver'],
+			$this->_config->database
+		));
 	}
 
 	/**
@@ -134,15 +149,20 @@ class Application {
 	 * @throws \UnexpectedValueException
 	 */
 	public function getUrl(string $slug): URL{
+
 		$query = $this->_pixie->table('redirects');
 		$query->where('slug', '=', trim($slug));
 		$url = $query->first();
 
+		// slug not found
 		if (!$url) {
 			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
 		}
 
-		$this->_pixie->table('redirects')->update(['hits' => $this->_pixie->raw('hits + 1')]);
+		// increment url hit counter
+		$this->_pixie->table('redirects')->update([
+			'hits' => $this->_pixie->raw('hits + 1'),
+		]);
 
 		return new URL($url->slug, $url->url, $this->_config);
 	}
