@@ -59,7 +59,10 @@ class Config {
 		'tracking'        => [
 			'enabled'    => true,
 			'respectDNT' => true,
-			'trackIP'    => true,
+			'store'      => [
+				'ip'        => true,
+				'userAgent' => true,
+			],
 		],
 	];
 

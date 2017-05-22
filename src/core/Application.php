@@ -129,8 +129,13 @@ class Application {
 			];
 
 			// track IP, if either user doesn't send DNT, or we decided to ignore it
-			if ($this->_config->tracking['trackIP'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
+			if ($this->_config->tracking['store']['ip'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
 				$visit['ip'] = inet_pton($this->_network->getIPAddr());
+			}
+
+			// also save userAgent, if enabled
+			if ($this->_config->tracking['store']['userAgent']) {
+				$visit['user_agent'] = $this->_network->getUserAgent();
 			}
 
 			// save visitor data

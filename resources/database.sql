@@ -1,5 +1,5 @@
--- Create syntax for TABLE 'url_redirects'
-CREATE TABLE `url_redirects` (
+-- Create syntax for TABLE 'redirects'
+CREATE TABLE `redirects` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `slug` varchar(64) NOT NULL DEFAULT '',
   `url` text NOT NULL,
@@ -12,12 +12,13 @@ CREATE TABLE `url_redirects` (
   KEY `search` (`slug`,`enabled`,`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Create syntax for TABLE 'url_visits'
-CREATE TABLE `url_visits` (
+-- Create syntax for TABLE 'visits'
+CREATE TABLE `visits` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT,
   `url_id` bigint(20) unsigned NOT NULL,
   `visited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip` varbinary(32) DEFAULT NULL,
+  `user_agent` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `url` (`url_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -147,4 +147,31 @@ class Network {
 		return null;
 	}
 
+	/**
+	 * @return string|null
+	 */
+	protected function getUserAgent() {
+		return $this->get('HTTP_USER_AGENT');
+	}
+
+	/**
+	 * @param  string $name
+	 * @param  mixed $default
+	 * @return mixed
+	 */
+	protected function get(string $name, $default = null) {
+		if (isset($_SERVER[$name]) && !empty($_SERVER[$name])) {
+			return trim($_SERVER[$name]);
+		}
+		return $default;
+	}
+
+	/**
+	 * @param int $code
+	 */
+	protected function error(int $code) {
+		http_response_code($code);
+		exit(0);
+	}
+
 }
