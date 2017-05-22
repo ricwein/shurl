@@ -99,9 +99,7 @@ class Application {
 
 		$query = $this->_pixie->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
-		if (!$query->insert($data)) {
-			throw new \UnexpectedValueException('database insertion failed', 500);
-		}
+		$query->insert($data);
 
 		return new URL($data['slug'], $data['url'], $this->_config);
 	}

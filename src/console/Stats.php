@@ -42,7 +42,7 @@ class Stats extends Command {
 		$query->join('visits', 'redirects.id', '=', 'visits.url_id', 'LEFT');
 		$query->select(['redirects.*', $query->raw('COUNT(' . Config::getInstance()->database['prefix'] . 'visits.id) as hits')]);
 		$query->groupBy('redirects.id');
-		$query->orderBy(['redirects.id', 'hits'], 'DESC');
+		$query->orderBy(['hits', 'redirects.id'], 'DESC');
 
 		// only select currently enabled entries
 		if (!$input->getOption('all')) {
