@@ -72,10 +72,10 @@ class Network {
 	protected function redirect(URL $url) {
 
 		if ($this->_config->cache['clientRedirectCaching'] && !$this->_config->development) {
-			http_response_code(301);
+			$this->setStatusCode(301);
 			header('Cache-Control: max-age=3600');
 		} else {
-			http_response_code(302);
+			$this->setStatusCode(302);
 			header('Pragma: no-cache');
 			header('Cache-Control: no-cache, no-store, must-revalidate');
 			header('Expires: 0');
@@ -169,9 +169,8 @@ class Network {
 	/**
 	 * @param int $code
 	 */
-	protected function error(int $code) {
+	protected function setStatusCode(int $code) {
 		http_response_code($code);
-		exit(0);
 	}
 
 }

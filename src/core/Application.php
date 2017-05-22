@@ -30,6 +30,11 @@ class Application {
 	protected $_pixie;
 
 	/**
+	 * @var Logger
+	 */
+	protected $_logger;
+
+	/**
 	 * init new shurl Core
 	 * @param Config|null $config
 	 */
@@ -43,14 +48,14 @@ class Application {
 		}
 
 		// init new monolog logger
-		$logger = new Logger('Logger Name');
-		$logger->pushHandler(new StreamHandler(
+		$this->_logger = new Logger('Logger Name');
+		$this->_logger->pushHandler(new StreamHandler(
 			__DIR__ . '/../../' . ltrim($this->_config->log['path'], '/'),
 			$this->_config->log['severity']
 		));
 
 		// register as global fallback handler
-		ErrorHandler::register($logger);
+		ErrorHandler::register($this->_logger);
 
 		// init new database connection and Pixie querybuilder
 		$this->_pixie = new QueryBuilderHandler(new Connection(
@@ -70,15 +75,30 @@ class Application {
 	public function route() {
 		$slug = $this->_network->getRoute();
 
-		if ($slug === null) {
-			throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
-		} elseif ($slug === '') {
-			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
+		try {
+
+			if ($slug === null) {
+				throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
+			} elseif ($slug === '') {
+				throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
+			}
+
+			$url = $this->getUrl($slug);
+
+			$this->_network->redirect($url);
+
+		} catch (\Throwable $exception) {
+
+			$statusCode = $exception->getCode();
+			$this->_logger->addRecord(
+				($statusCode > 0 && $statusCode < 500 ? Logger::NOTICE : Logger::ERROR),
+				$exception->getMessage(),
+				['exception' => $exception]
+			);
+
+			$this->_network->setStatusCode($statusCode > 0 ? $statusCode : 500);
 		}
 
-		$url = $this->getUrl($slug);
-
-		$this->_network->redirect($url);
 	}
 
 	/**
