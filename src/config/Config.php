@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\config;
+namespace ricwein\shurl\Config;
 
 use Monolog\Logger;
 use Symfony\Component\Yaml\Yaml;
@@ -68,6 +68,16 @@ class Config {
 			'store'      => [
 				'ip'        => true,
 				'userAgent' => true,
+			],
+		],
+
+		'cache'           => [
+			'enabled' => false,
+			'driver'  => 'auto',
+			'prefix'  => '',
+			'config'  => [
+				'memcache' => [],
+				'redis'    => [],
 			],
 		],
 	];

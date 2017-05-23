@@ -1,8 +1,8 @@
 <?php
 
-namespace ricwein\shurl\core;
+namespace ricwein\shurl\Core;
 
-use ricwein\shurl\config\Config;
+use ricwein\shurl\Config\Config;
 
 /**
  * provides HTTP Networking methods

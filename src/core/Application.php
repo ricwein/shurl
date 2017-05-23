@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\core;
+namespace ricwein\shurl\Core;
 
 use Hashids\Hashids;
 use Monolog\ErrorHandler;
@@ -8,7 +8,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
-use ricwein\shurl\config\Config;
+use ricwein\shurl\Config\Config;
 
 /**
  * shurl core class

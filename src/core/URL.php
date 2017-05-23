@@ -1,7 +1,8 @@
 <?php
 
-namespace ricwein\shurl\core;
-use ricwein\shurl\config\Config;
+namespace ricwein\shurl\Core;
+
+use ricwein\shurl\Config\Config;
 
 /**
  * represents a shurl URL object

@@ -3,9 +3,9 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use ricwein\shurl\console\Add;
-use ricwein\shurl\console\Remove;
-use ricwein\shurl\console\Show;
+use ricwein\shurl\Console\Add;
+use ricwein\shurl\Console\Remove;
+use ricwein\shurl\Console\Show;
 use Symfony\Component\Console\Application;
 
 $application = new Application();

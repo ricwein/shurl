@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\console;
+namespace ricwein\shurl\Console;
 
 use ricwein\shurl\config\Config;
 use ricwein\shurl\core\Application;
