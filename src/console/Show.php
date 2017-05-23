@@ -25,6 +25,7 @@ class Show extends Command {
 			new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit results. <comment>0 = unlimited</comment>', 100),
 			new InputOption('all', 'a', InputOption::VALUE_NONE, 'also show disabled entries, default is only enabled'),
 			new InputOption('shortenedURL', 'u', InputOption::VALUE_NONE, 'adds full shortened URL to output'),
+			new InputOption('filter', 'f', InputOption::VALUE_OPTIONAL, 'Search for Slug or URL'),
 		]);
 
 	}
@@ -36,27 +37,34 @@ class Show extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$app = new Application();
 
-		$limit = $input->getOption('limit');
-
 		$query = $app->getDB()->table('redirects');
-		$query->join('visits', 'redirects.id', '=', 'visits.url_id', 'LEFT');
-		$query->select(['redirects.*', $query->raw('COUNT(' . Config::getInstance()->database['prefix'] . 'visits.id) as hits')]);
+
+		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
+		$query->join('visits', 'redirects.id', '=', 'visits.redirect_id', 'LEFT');
+
+		$query->select(['redirects.*', 'urls.url', $query->raw('COUNT(' . Config::getInstance()->database['prefix'] . 'visits.id) as hits')]);
 		$query->groupBy('redirects.id');
 		$query->orderBy(['hits', 'redirects.id'], 'DESC');
 
 		// only select currently enabled entries
 		if (!$input->getOption('all')) {
 			$query->where('redirects.enabled', '=', true);
-			$query->where(function ($db) use ($app) {
+			$query->where(function ($db) {
 				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.expires > NOW()'));
 				$db->orWhereNull('redirects.expires');
 			});
 		}
 
-		if ($limit > 0) {
+		if (0 < $limit = $input->getOption('limit')) {
 			$query->limit((int) $limit);
 		}
-		// die($query->getQuery()->getRawSql());
+
+		if (null !== $filter = $input->getOption('filter')) {
+			$query->where(function ($db) use ($filter) {
+				$db->where('redirects.slug', 'LIKE', '%' . $filter . '%');
+				$db->orWhere('urls.url', 'LIKE', '%' . $filter . '%');
+			});
+		}
 
 		$entries = [];
 		$header  = ['Hits', 'Slug', 'URL', 'created'];

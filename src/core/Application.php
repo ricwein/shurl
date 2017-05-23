@@ -2,6 +2,7 @@
 
 namespace ricwein\shurl\core;
 
+use Hashids\Hashids;
 use Monolog\ErrorHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -89,6 +90,10 @@ class Application {
 
 		} catch (\Throwable $exception) {
 
+			if ($this->_config->development) {
+				throw $exception;
+			}
+
 			$statusCode = $exception->getCode();
 			$this->_logger->addRecord(
 				($statusCode > 0 && $statusCode < 500 ? Logger::NOTICE : Logger::ERROR),
@@ -96,7 +101,7 @@ class Application {
 				['exception' => $exception]
 			);
 
-			$this->_network->setStatusCode($statusCode > 0 ? $statusCode : 500);
+			$this->_network->setStatusCode($statusCode > 0 ? (int) $statusCode : 500);
 		}
 
 	}
@@ -109,14 +114,28 @@ class Application {
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function addUrl(string $url, string $slug = null, string $expires = null): URL {
+	public function addUrl(string $url, string $slug = null, string $expires = null): URL{
 
-		if ($slug === null) {
-			$slug = (new IDEngine($this->_config))->create($url);
+		$url = trim($url);
+
+		$data = [
+			'url'  => $url,
+			'hash' => hash($this->_config->urls['hash'], $slug, false),
+		];
+
+		$query = $this->_pixie->table('urls');
+		$query->onDuplicateKeyUpdate($data);
+		$urlID = $query->insert($data);
+
+		if ((int) $urlID <= 0) {
+			throw new \UnexpectedValueException('database error: unable to insert data', 500);
+		} elseif ($slug === null) {
+			$hashidEngine = new Hashids($this->_config->urls['salt'], 3, $this->_config->urls['alphabet']);
+			$slug         = $hashidEngine->encode($urlID);
 		}
 
 		$data = [
-			'url'     => trim($url),
+			'url_id'  => $urlID,
 			'slug'    => trim($slug),
 			'expires' => ($expires !== null ? date($this->_config->timestampFormat['database'], strtotime($expires)) : null),
 			'enabled' => 1,
@@ -126,7 +145,7 @@ class Application {
 		$query->onDuplicateKeyUpdate($data);
 		$query->insert($data);
 
-		return new URL($data['slug'], $data['url'], $this->_config);
+		return new URL($data['slug'], $url, $this->_config);
 	}
 
 	/**
@@ -138,7 +157,17 @@ class Application {
 	public function getUrl(string $slug): URL{
 
 		$query = $this->_pixie->table('redirects');
-		$query->where('slug', '=', trim($slug));
+
+		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
+
+		$query->where('redirects.slug', trim($slug));
+		$query->where('redirects.enabled', true);
+		$query->where(function ($db) {
+			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.expires > NOW()'));
+			$db->orWhereNull('redirects.expires');
+		});
+
+		$query->select(['redirects.id', 'redirects.slug', 'urls.url']);
 		$url = $query->first();
 
 		// slug not found
@@ -149,8 +178,8 @@ class Application {
 		// handle url tracking
 		if ($this->_config->tracking['enabled']) {
 			$visit = [
-				'url_id'  => $url->id,
-				'visited' => date($this->_config->timestampFormat['database']),
+				'redirect_id' => $url->id,
+				'visited'     => date($this->_config->timestampFormat['database']),
 			];
 
 			// track IP, if either user doesn't send DNT, or we decided to ignore it

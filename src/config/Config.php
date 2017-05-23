@@ -56,9 +56,10 @@ class Config {
 			'database' => 'Y-m-d H:i:s',
 		],
 
-		'slug'            => [
+		'urls'            => [
 			'alphabet' => 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ0123456789',
-			'hash'     => 'md5',
+			'hash'     => 'sha256',
+			'salt'     => '',
 		],
 
 		'tracking'        => [

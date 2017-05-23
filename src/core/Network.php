@@ -72,16 +72,22 @@ class Network {
 	protected function redirect(URL $url) {
 
 		if ($this->_config->cache['clientRedirectCaching'] && !$this->_config->development) {
-			$this->setStatusCode(301);
-			header('Cache-Control: max-age=3600');
+
+			$this
+				->setStatusCode(301)
+				->setHeader('Cache-Control', 'max-age=3600');
+
 		} else {
-			$this->setStatusCode(302);
-			header('Pragma: no-cache');
-			header('Cache-Control: no-cache, no-store, must-revalidate');
-			header('Expires: 0');
+
+			$this
+				->setStatusCode(302)
+				->setHeader('Pragma', 'no-cache')
+				->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+				->setHeader('Expires', '0');
+
 		}
 
-		header('Location: ' . $url->getOriginal());
+		$this->setHeader('Location', $url->getOriginal());
 		exit(0);
 	}
 
@@ -167,10 +173,22 @@ class Network {
 	}
 
 	/**
-	 * @param int $code
+	 * @param string $name
+	 * @param string $message
+	 * @return self
 	 */
-	protected function setStatusCode(int $code) {
+	protected function setHeader(string $name, string $message): self{
+		header($name . ': ' . $message);
+		return $this;
+	}
+
+	/**
+	 * @param int $code
+	 * @return self
+	 */
+	protected function setStatusCode(int $code): self{
 		http_response_code($code);
+		return $this;
 	}
 
 }

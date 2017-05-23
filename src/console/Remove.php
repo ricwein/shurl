@@ -2,6 +2,7 @@
 
 namespace ricwein\shurl\console;
 
+use ricwein\shurl\config\Config;
 use ricwein\shurl\core\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -47,15 +48,19 @@ class Remove extends Command {
 		$app = new Application();
 
 		$query = $app->getDB()->table('redirects');
-		$query->where('enabled', '=', true);
-		$query->where(function ($db) use ($app) {
-			$db->where($db->raw('expires > NOW()'));
-			$db->orWhereNull('expires');
+		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
+
+		$query->where('redirects.enabled', '=', true);
+		$query->where(function ($db) {
+			$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.expires > NOW()'));
+			$db->orWhereNull('redirects.expires');
 		});
 		$query->where(function ($db) use ($search) {
 			$db->where('slug', 'LIKE', '%' . $search . '%');
 			$db->orWhere('url', 'LIKE', '%' . $search . '%');
 		});
+
+		$query->select(['redirects.id', 'redirects.slug', 'redirects.expires', 'urls.url']);
 		$selection = $query->get();
 
 		$helper   = $this->getHelper('question');
@@ -86,7 +91,7 @@ class Remove extends Command {
 				if ($helper->ask($input, $output, $question)) {
 					$query = $app->getDB()->table('redirects');
 					$query->where('slug', '=', $entry->slug);
-					$query->where('url', '=', $entry->url);
+					$query->where('id', '=', $entry->id);
 					$query->update(['enabled' => 0]);
 				}
 

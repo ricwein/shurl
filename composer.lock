@@ -4,8 +4,71 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "55d79799c30914fbcfd4ba177a5afc7a",
+    "content-hash": "9916ee39ee32121a1a7f85ca1725f9c9",
     "packages": [
+        {
+            "name": "hashids/hashids",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ivanakimov/hashids.php.git",
+                "reference": "899a837a35a1da28550a48886e3ba008ede8d9f0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ivanakimov/hashids.php/zipball/899a837a35a1da28550a48886e3ba008ede8d9f0",
+                "reference": "899a837a35a1da28550a48886e3ba008ede8d9f0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-bcmath": "*",
+                "php": "^5.6.4 || ^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7 || ^6.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Hashids\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Akimov",
+                    "email": "ivan@barreleye.com",
+                    "homepage": "https://twitter.com/IvanAkimov"
+                },
+                {
+                    "name": "Vincent Klaiber",
+                    "email": "hello@vinkla.com",
+                    "homepage": "https://vinkla.com"
+                }
+            ],
+            "description": "Generate short, unique, non-sequential ids (like YouTube and Bitly) from numbers",
+            "homepage": "http://hashids.org/php",
+            "keywords": [
+                "bitly",
+                "decode",
+                "encode",
+                "hash",
+                "hashid",
+                "hashids",
+                "ids",
+                "obfuscate",
+                "youtube"
+            ],
+            "time": "2017-02-05 11:43:59"
+        },
         {
             "name": "monolog/monolog",
             "version": "dev-master",
@@ -669,7 +732,8 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "symfony/console": 20,
-        "monolog/monolog": 20
+        "monolog/monolog": 20,
+        "hashids/hashids": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
