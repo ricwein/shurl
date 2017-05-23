@@ -120,7 +120,7 @@ class Application {
 
 		$data = [
 			'url'  => $url,
-			'hash' => hash($this->_config->urls['hash'], $slug, false),
+			'hash' => hash($this->_config->urls['hash'], $url, false),
 		];
 
 		$query = $this->_pixie->table('urls');
@@ -128,10 +128,14 @@ class Application {
 		$urlID = $query->insert($data);
 
 		if ((int) $urlID <= 0) {
+
 			throw new \UnexpectedValueException('database error: unable to insert data', 500);
+
 		} elseif ($slug === null) {
+
 			$hashidEngine = new Hashids($this->_config->urls['salt'], 3, $this->_config->urls['alphabet']);
 			$slug         = $hashidEngine->encode($urlID);
+
 		}
 
 		$data = [
