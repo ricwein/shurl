@@ -13,11 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * provides add command to bin/shurl cli tool
  */
-class Stats extends Command {
+class Show extends Command {
 
 	protected function configure() {
 
-		$this->setName('stats');
+		$this->setName('url:show');
 		$this->setDescription('generate and show stats.');
 		$this->setHelp('This command generates usage-statistics about all known entries.');
 

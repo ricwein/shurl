@@ -104,12 +104,17 @@ class Application {
 	/**
 	 * add new URL to index
 	 * @param  string $url
-	 * @param  string $slug
+	 * @param  string|null $slug
 	 * @param  string|null $expires
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function addUrl(string $url, string $slug, string $expires = null): URL{
+	public function addUrl(string $url, string $slug = null, string $expires = null): URL {
+
+		if ($slug === null) {
+			$slug = (new IDEngine($this->_config))->create($url);
+		}
+
 		$data = [
 			'url'     => trim($url),
 			'slug'    => trim($slug),

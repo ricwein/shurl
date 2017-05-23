@@ -49,3 +49,7 @@ For more Informations see `./bin/shurl url:add --help`.
 ## Remove an URL
 
 Removing an URL from the list, is as easy as adding one. Execute `./bin/shurl url:remove` from your command line should do the job.
+
+## List available URLs
+
+A list of all currently available URls can be accessed through: `./bin/shurl url:show`

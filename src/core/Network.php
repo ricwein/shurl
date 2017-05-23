@@ -20,7 +20,7 @@ class Network {
 	protected $_config;
 
 	/**
-	 * provide singleton access for networking method
+	 * provide singleton access for networking methods
 	 * @param Config|null $config
 	 * @return self
 	 */

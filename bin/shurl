@@ -5,13 +5,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use ricwein\shurl\console\Add;
 use ricwein\shurl\console\Remove;
-use ricwein\shurl\console\Stats;
+use ricwein\shurl\console\Show;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
 $application->add(new Add());
 $application->add(new Remove());
-$application->add(new Stats());
+$application->add(new Show());
 
 $application->run();

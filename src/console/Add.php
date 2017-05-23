@@ -75,15 +75,12 @@ class Add extends Command {
 
 		}
 
+		$app = new Application();
 		if (null === $slug = $input->getOption('slug')) {
-
-			// @TODO add better slug generation here
-			$slug = md5($url);
-
+			$info = $app->addUrl($url, null, $input->getOption('expires'));
+		} else {
+			$info = $app->addUrl($url, ltrim($slug, '= '), $input->getOption('expires'));
 		}
-
-		$app  = new Application();
-		$info = $app->addUrl($url, trim($slug, '= '), $input->getOption('expires'));
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);
 		$output->writeln('Original URL:  ' . $info->getOriginal());
