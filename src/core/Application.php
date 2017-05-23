@@ -125,13 +125,20 @@ class Application {
 
 		$query = $this->_pixie->table('urls');
 		$query->onDuplicateKeyUpdate($data);
-		$urlID = $query->insert($data);
 
-		if ((int) $urlID <= 0) {
+		if (0 >= $urlID = $query->insert($data)) {
 
-			throw new \UnexpectedValueException('database error: unable to insert data', 500);
+			// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
+			$urlTemp = $this->_pixie->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
+			if (!$urlTemp || !isset($urlTemp->id)) {
+				throw new \UnexpectedValueException('database error: unable to insert data', 500);
+			}
 
-		} elseif ($slug === null) {
+			$urlID = $urlTemp->id;
+
+		}
+
+		if ($slug === null) {
 
 			$hashidEngine = new Hashids($this->_config->urls['salt'], 3, $this->_config->urls['alphabet']);
 			$slug         = $hashidEngine->encode($urlID);
