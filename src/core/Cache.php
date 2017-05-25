@@ -11,11 +11,6 @@ use phpFastCache\Core\Pool\ExtendedCacheItemPoolInterface;
 class Cache {
 
 	/**
-	 * @var array
-	 */
-	private static $__instance = [];
-
-	/**
 	 * @var ExtendedCacheItemPoolInterface
 	 */
 	protected $_cache = null;
@@ -30,14 +25,9 @@ class Cache {
 	 * @param array $config
 	 */
 	public function __construct(string $engine = 'auto', array $config) {
-		if (isset($config['prefix'])) {
-			$this->setPrefix($config['prefix']);
-		}
 
 		// load caching-adapter
-		if (!$config['enabled']) {
-			$this->_cache = CacheManager::getInstance('Phparray', $config);
-		} elseif (strtolower($engine) === 'auto') {
+		if (strtolower($engine) === 'auto') {
 			$this->_cache = static::_loadDynamicCache($config);
 		} else {
 			$this->_cache = CacheManager::getInstance($engine, $config);
@@ -51,21 +41,6 @@ class Cache {
 	public function setPrefix(string $prefix = ''): self{
 		$this->_prefix = trim(rtrim((string) $prefix, '._-')) . '.';
 		return $this;
-	}
-
-	/**
-	 * @param string $engine
-	 * @param array $config
-	 * @return self
-	 */
-	public static function instance(string $engine = 'auto', array $config = null): self{
-		$name = strtolower($engine);
-
-		if (!isset(static::$__instance[$name])) {
-			static::$__instance[$name] = new static($engine, $config);
-		}
-
-		return static::$__instance[$name];
 	}
 
 	/**

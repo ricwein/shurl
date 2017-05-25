@@ -103,7 +103,11 @@ class Network {
 			if (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
 
 				// only replace first occurence of script-name in path
-				$scriptName = dirname($_SERVER['SCRIPT_NAME']);
+				$scriptPath = dirname($_SERVER['SCRIPT_NAME']);
+				$scriptName = basename($_SERVER['SCRIPT_NAME']);
+				if (substr($path, 0, strlen($scriptPath)) === $scriptPath) {
+					$path = substr($path, strlen($scriptPath));
+				}
 				if (substr($path, 0, strlen($scriptName)) === $scriptName) {
 					$path = substr($path, strlen($scriptName));
 				}
@@ -158,6 +162,26 @@ class Network {
 	 */
 	protected function getUserAgent() {
 		return $this->get('HTTP_USER_AGENT');
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isSecured(): bool {
+		return isset($_SERVER['HTTPS']);
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getBaseURL(): string{
+		$schema = ($this->isSecured() ? 'https' : 'http');
+
+		if (false !== $host = $this->get('HTTP_HOST', false)) {
+			return $schema . '://' . $host;
+		}
+
+		return $this->_config->rootURL;
 	}
 
 	/**

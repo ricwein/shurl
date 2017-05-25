@@ -10,6 +10,11 @@ use ricwein\shurl\Config\Config;
 class URL {
 
 	/**
+	 * @var int
+	 */
+	protected $_redirectID;
+
+	/**
 	 * @var string
 	 */
 	protected $_originalURL;
@@ -25,15 +30,24 @@ class URL {
 	protected $_shortenedURL;
 
 	/**
+	 * @param int $redirectID
 	 * @param string $slug
 	 * @param string $originalURL
 	 * @param Config $config
 	 */
-	public function __construct(string $slug, string $originalURL, Config $config) {
+	public function __construct(int $redirectID, string $slug, string $originalURL, Config $config) {
+		$this->_redirectID  = $redirectID;
 		$this->_slug        = $slug;
 		$this->_originalURL = $originalURL;
 
 		$this->_shortenedURL = rtrim($config->rootURL, '/') . '/' . $slug;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getRedirectID(): int {
+		return $this->_redirectID;
 	}
 
 	/**

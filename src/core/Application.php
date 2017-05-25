@@ -8,6 +8,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
+use ReflectionClass;
 use ricwein\shurl\Config\Config;
 
 /**
@@ -36,6 +37,11 @@ class Application {
 	protected $_logger;
 
 	/**
+	 * @var Cache|null
+	 */
+	protected $_cache = null;
+
+	/**
 	 * init new shurl Core
 	 * @param Config|null $config
 	 */
@@ -48,6 +54,13 @@ class Application {
 			$this->_config = $config;
 		}
 
+		// init new network class
+		$this->_network = Network::getInstance($this->_config);
+
+		if ($this->_config->cache['enabled']) {
+			$this->_cache = new Cache($this->_config->cache['engine'], $this->_config->cache['config']);
+		}
+
 		// init new monolog logger
 		$this->_logger = new Logger('Logger Name');
 		$this->_logger->pushHandler(new StreamHandler(
@@ -58,14 +71,19 @@ class Application {
 		// register as global fallback handler
 		ErrorHandler::register($this->_logger);
 
-		// init new database connection and Pixie querybuilder
-		$this->_pixie = new QueryBuilderHandler(new Connection(
-			$this->_config->database['driver'],
-			$this->_config->database
-		));
+		try {
 
-		$this->_network = Network::getInstance($this->_config);
+			// init new database connection and Pixie querybuilder
+			$this->_pixie = new QueryBuilderHandler(new Connection(
+				$this->_config->database['driver'],
+				$this->_config->database
+			));
 
+		} catch (\Throwable $exception) {
+
+			throw new \Exception('Unable to connect to Database', 1, $exception);
+
+		}
 	}
 
 	/**
@@ -81,7 +99,7 @@ class Application {
 			if ($slug === null) {
 				throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
 			} elseif ($slug === '') {
-				throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
+				(new Template('welcome', $this->_config, $this->_network))->render();
 			}
 
 			$url = $this->getUrl($slug);
@@ -89,10 +107,6 @@ class Application {
 			$this->_network->redirect($url);
 
 		} catch (\Throwable $exception) {
-
-			if ($this->_config->development) {
-				throw $exception;
-			}
 
 			$statusCode = $exception->getCode();
 			$this->_logger->addRecord(
@@ -102,6 +116,13 @@ class Application {
 			);
 
 			$this->_network->setStatusCode($statusCode > 0 ? (int) $statusCode : 500);
+
+			$template = new Template('error', $this->_config, $this->_network);
+			$template->render([
+				'code'    => $statusCode,
+				'type'    => (new \ReflectionClass($exception))->getShortName(),
+				'message' => $exception->getMessage(),
+			]);
 		}
 
 	}
@@ -154,9 +175,23 @@ class Application {
 
 		$query = $this->_pixie->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
-		$query->insert($data);
+		$redirectID = $query->insert($data);
 
-		return new URL($data['slug'], $url, $this->_config);
+		return new URL($redirectID, $data['slug'], $url, $this->_config);
+	}
+
+	/**
+	 * fetch url and handle visitor-count
+	 * @param string $slug
+	 * @return URL
+	 * @throws \UnexpectedValueException
+	 */
+	public function getUrl(string $slug): URL{
+
+		$url = $this->_fetchURL($slug);
+		$this->_trackVisit($url);
+
+		return $url;
 	}
 
 	/**
@@ -165,8 +200,7 @@ class Application {
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function getUrl(string $slug): URL{
-
+	protected function _fetchURL(string $slug): URL{
 		$query = $this->_pixie->table('redirects');
 
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
@@ -186,29 +220,40 @@ class Application {
 			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
 		}
 
-		// handle url tracking
-		if ($this->_config->tracking['enabled']) {
-			$visit = [
-				'redirect_id' => $url->id,
-				'visited'     => date($this->_config->timestampFormat['database']),
-			];
+		return new URL($url->id, $url->slug, $url->url, $this->_config);
+	}
 
-			// track IP, if either user doesn't send DNT, or we decided to ignore it
-			if ($this->_config->tracking['store']['ip'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
-				$visit['ip'] = inet_pton($this->_network->getIPAddr());
-			}
+	/**
+	 * handle url tracking
+	 * @param URL $url
+	 * @return self
+	 */
+	protected function _trackVisit(URL $url): self {
 
-			// also save userAgent, if enabled
-			if ($this->_config->tracking['store']['userAgent']) {
-				$visit['user_agent'] = $this->_network->getUserAgent();
-			}
-
-			// save visitor data
-			$query = $this->_pixie->table('visits');
-			$query->insert($visit);
+		if (!$this->_config->tracking['enabled']) {
+			return $this;
 		}
 
-		return new URL($url->slug, $url->url, $this->_config);
+		$visit = [
+			'redirect_id' => $url->getRedirectID(),
+			'visited'     => date($this->_config->timestampFormat['database']),
+		];
+
+		// track IP, if either user doesn't send DNT, or we decided to ignore it
+		if ($this->_config->tracking['store']['ip'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
+			$visit['ip'] = inet_pton($this->_network->getIPAddr());
+		}
+
+		// also save userAgent, if enabled
+		if ($this->_config->tracking['store']['userAgent']) {
+			$visit['user_agent'] = $this->_network->getUserAgent();
+		}
+
+		// save visitor data
+		$query = $this->_pixie->table('visits');
+		$query->insert($visit);
+
+		return $this;
 	}
 
 	/**

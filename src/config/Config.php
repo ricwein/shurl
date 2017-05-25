@@ -72,13 +72,21 @@ class Config {
 		],
 
 		'cache'           => [
-			'enabled' => false,
-			'driver'  => 'auto',
-			'prefix'  => '',
-			'config'  => [
+			'enabled'      => false,
+			'skipHitcount' => false,
+			'cacheMisses'  => false,
+			'driver'       => 'auto',
+			'prefix'       => '',
+			'config'       => [
 				'memcache' => [],
 				'redis'    => [],
 			],
+		],
+
+		'template'        => [
+			'path'            => 'assets/templates/',
+			'extension'       => '.html',
+			'defaultBindings' => [],
 		],
 	];
 
