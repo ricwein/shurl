@@ -129,7 +129,18 @@ class Network {
 	 * @return bool
 	 */
 	protected function hasDNTSet(): bool {
-		return (isset($_SERVER['HTTP_DNT']) && (int) $_SERVER['HTTP_DNT'] === 1);
+
+		/**
+		 * @var bool
+		 */
+		static $hasDNT = null;
+		if ($hasDNT !== null) {
+			return $hasDNT;
+		}
+
+		$hasDNT = (isset($_SERVER['HTTP_DNT']) && (int) $_SERVER['HTTP_DNT'] === 1);
+
+		return $hasDNT;
 	}
 
 	/**

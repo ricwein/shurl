@@ -196,7 +196,11 @@ class Application {
 		}
 
 		// try a cache lookup first
-		$urlCache = $this->_cache->getItem('slug_' . $slug);
+		$urlCache = $this->_cache->getItem('slug_' . str_replace([
+			'{', '}', '(', ')', '/', '\\', '@', ':',
+		], [
+			'|', '|', '|', '|', '.', '.', '-', '_',
+		], $slug));
 		if (!$urlCache->isHit()) {
 
 			// fetch entry from db, and safe in cache
@@ -262,14 +266,18 @@ class Application {
 			'visited'     => date($this->_config->timestampFormat['database']),
 		];
 
-		// track IP, if either user doesn't send DNT, or we decided to ignore it
-		if ($this->_config->tracking['store']['ip'] && (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet())) {
-			$visit['ip'] = inet_pton($this->_network->getIPAddr());
-		}
+		// track user-data, if dnt is not set
+		if (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet()) {
 
-		// also save userAgent, if enabled
-		if ($this->_config->tracking['store']['userAgent']) {
-			$visit['user_agent'] = $this->_network->getUserAgent();
+			if ($this->_config->tracking['store']['ip']) {
+				// track IP, if either user doesn't send DNT, or we decided to ignore it
+				$visit['ip'] = inet_pton($this->_network->getIPAddr());
+			}
+
+			if ($this->_config->tracking['store']['userAgent']) {
+				// save userAgent, if enabled
+				$visit['user_agent'] = $this->_network->getUserAgent();
+			}
 		}
 
 		// save visitor data
