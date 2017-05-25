@@ -2,8 +2,8 @@
 
 namespace ricwein\shurl\Console;
 
-use ricwein\shurl\config\Config;
-use ricwein\shurl\core\Application;
+use ricwein\shurl\Config\Config;
+use ricwein\shurl\Core\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;

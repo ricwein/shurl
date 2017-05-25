@@ -2,7 +2,7 @@
 
 namespace ricwein\shurl\Console;
 
-use ricwein\shurl\core\Application;
+use ricwein\shurl\Core\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

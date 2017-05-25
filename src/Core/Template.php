@@ -62,9 +62,10 @@ class Template {
 
 	/**
 	 * @param array|object $bindings
+	 * @param callable|null $filter
 	 * @return void
 	 */
-	public function render($bindings = null) {
+	public function render($bindings = null, callable $filter = null) {
 
 		if (false === $content = @file_get_contents($this->_templateFile)) {
 			throw new \UnexpectedValueException('unable to read template', 404);
@@ -77,6 +78,10 @@ class Template {
 		$content = $this->_apply($content, array_merge([
 			'base_url' => $this->_network->getBaseURL(),
 		], $this->_config->template['defaultBindings']));
+
+		if ($filter !== null) {
+			$content = call_user_func_array($filter, [$content]);
+		}
 
 		echo $content;
 		exit(0);
