@@ -62,24 +62,23 @@ class Config {
 			'salt'     => '',
 		],
 
+		'cache'           => [
+			'enabled'  => true,
+			'engine'   => 'auto',
+			'duration' => 3600,
+			'prefix'   => '',
+			'config'   => [
+				'memcache' => [],
+				'redis'    => [],
+			],
+		],
+
 		'tracking'        => [
 			'enabled'    => true,
 			'respectDNT' => true,
 			'store'      => [
 				'ip'        => true,
 				'userAgent' => true,
-			],
-		],
-
-		'cache'           => [
-			'enabled'      => false,
-			'skipHitcount' => false,
-			'cacheMisses'  => false,
-			'driver'       => 'auto',
-			'prefix'       => '',
-			'config'       => [
-				'memcache' => [],
-				'redis'    => [],
 			],
 		],
 

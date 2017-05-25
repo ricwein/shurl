@@ -8,7 +8,6 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
-use ReflectionClass;
 use ricwein\shurl\Config\Config;
 
 /**
@@ -59,6 +58,7 @@ class Application {
 
 		if ($this->_config->cache['enabled']) {
 			$this->_cache = new Cache($this->_config->cache['engine'], $this->_config->cache['config']);
+			$this->_cache->setPrefix($this->_config->cache['prefix']);
 		}
 
 		// init new monolog logger
@@ -186,11 +186,34 @@ class Application {
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function getUrl(string $slug): URL{
+	public function getUrl(string $slug): URL {
 
-		$url = $this->_fetchURL($slug);
+		// skipt cache, and fetch directly from database
+		if ($this->_cache === null) {
+			$url = $this->_fetchURL($slug);
+			$this->_trackVisit($url);
+			return $url;
+		}
+
+		// try a cache lookup first
+		$urlCache = $this->_cache->getItem('slug_' . $slug);
+		if (!$urlCache->isHit()) {
+
+			// fetch entry from db, and safe in cache
+			$url = $this->_fetchURL($slug);
+
+			$urlCache->set($url);
+			$urlCache->expiresAfter($this->_config->cache['duration']);
+			$this->_cache->save($urlCache);
+
+		} else {
+
+			// load from cache
+			$url = $urlCache->get();
+
+		}
+
 		$this->_trackVisit($url);
-
 		return $url;
 	}
 

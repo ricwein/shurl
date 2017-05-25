@@ -177,11 +177,18 @@ class Network {
 	protected function getBaseURL(): string{
 		$schema = ($this->isSecured() ? 'https' : 'http');
 
-		if (false !== $host = $this->get('HTTP_HOST', false)) {
-			return $schema . '://' . $host;
+		if (false === $host = $this->get('HTTP_HOST', false)) {
+			return $this->_config->rootURL;
 		}
 
-		return $this->_config->rootURL;
+		if (false === $path = $this->get('REQUEST_URI', false)) {
+			return $this->_config->rootURL;
+		}
+
+		$host = rtrim($host, '/');
+		$path = trim(str_replace($this->getRoute(), '', $path), '/');
+
+		return $schema . '://' . rtrim($host . '/' . $path, '/');
 	}
 
 	/**
