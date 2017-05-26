@@ -99,7 +99,7 @@ class Application {
 			if ($slug === null) {
 				throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
 			} elseif ($slug === '') {
-				(new Template('welcome', $this->_config, $this->_network, $this->_cache))->render();
+				$this->viewWelcome();
 			}
 
 			$url = $this->getUrl($slug);
@@ -108,23 +108,68 @@ class Application {
 
 		} catch (\Throwable $exception) {
 
-			$statusCode = $exception->getCode();
 			$this->_logger->addRecord(
-				($statusCode > 0 && $statusCode < 500 ? Logger::NOTICE : Logger::ERROR),
+				($exception->getCode() > 0 && $exception->getCode() < 500 ? Logger::NOTICE : Logger::ERROR),
 				$exception->getMessage(),
 				['exception' => $exception]
 			);
 
-			$this->_network->setStatusCode($statusCode > 0 ? (int) $statusCode : 500);
+			$this->viewError($exception);
+		}
+	}
 
-			$template = new Template('error', $this->_config, $this->_network, $this->_cache);
-			$template->render([
-				'code'       => $statusCode,
-				'type'       => (new \ReflectionClass($exception))->getShortName(),
-				'getMessage' => $exception,
-			]);
+	/**
+	 * @param \Throwable $throwable
+	 * @return void
+	 */
+	public function viewError(\Throwable $throwable) {
+		$template = new Template('error', $this->_config, $this->_network, $this->_cache);
+
+		$this->_network->setStatusCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
+
+		$template->render([
+			'type'    => (new \ReflectionClass($throwable))->getShortName(),
+			'code'    => $throwable->getCode(),
+			'message' => $throwable->getMessage(),
+		]);
+	}
+
+	/**
+	 * @return void
+	 */
+	public function viewWelcome() {
+		$template = new Template('welcome', $this->_config, $this->_network, $this->_cache);
+
+		if ($this->_cache === null) {
+			$template->render(['count' => $this->_getEntryCount()]);
 		}
 
+		$countCache = $this->_cache->getItem('count');
+
+		if (null === $count = $countCache->get()) {
+			$count = $this->_getEntryCount();
+			$countCache->set($count);
+			$countCache->expiresAfter(60);
+			$this->_cache->save($countCache);
+		}
+
+		$template->render(['count' => $count]);
+	}
+
+	/**
+	 * @return int
+	 */
+	protected function _getEntryCount(): int{
+		$query = $this->_pixie->table('redirects');
+		$query->select([$query->raw('COUNT(*) as count')]);
+
+		// only select currently enabled entries
+		$query->where('enabled', '=', true);
+		$query->where(function ($db) {
+			$db->where($db->raw('expires > NOW()'));
+			$db->orWhereNull('expires');
+		});
+		return $query->first()->count;
 	}
 
 	/**
@@ -196,25 +241,19 @@ class Application {
 		}
 
 		// try a cache lookup first
-		$urlCache = $this->_cache->getItem('slug_' . str_replace([
-			'{', '}', '(', ')', '/', '\\', '@', ':',
-		], [
-			'|', '|', '|', '|', '.', '.', '-', '_',
-		], $slug));
-		if (!$urlCache->isHit()) {
+		$urlCache = $this->_cache->getItem('slug_' . str_replace(
+			['{', '}', '(', ')', '/', '\\', '@', ':'],
+			['|', '|', '|', '|', '.', '.', '-', '_'],
+			$slug
+		));
 
+		if (null === $url = $urlCache->get()) {
 			// fetch entry from db, and safe in cache
 			$url = $this->_fetchURL($slug);
 
 			$urlCache->set($url);
 			$urlCache->expiresAfter($this->_config->cache['duration']);
 			$this->_cache->save($urlCache);
-
-		} else {
-
-			// load from cache
-			$url = $urlCache->get();
-
 		}
 
 		$this->_trackVisit($url);

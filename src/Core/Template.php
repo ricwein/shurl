@@ -83,7 +83,7 @@ class Template {
 		}
 
 		// default lookup for filenames, with and without default extension
-		$fileNames[] = [$filename];
+		$fileNames[] = $filename;
 		$fileNames[] = trim(dirname($filename) . '/' . pathinfo($filename, PATHINFO_FILENAME), '/.') . '.' . $extension;
 
 		// try each possible filename/path to find valid file
@@ -131,13 +131,13 @@ class Template {
 
 		if ($this->_cache !== null) {
 
-			$templateCache = $this->_cache->getItem('template_' . str_replace([
-				'{', '}', '(', ')', '/', '\\', '@', ':',
-			], [
-				'|', '|', '|', '|', '.', '.', '-', '_',
-			], $this->_templatePath . $this->_templateFile) . ($this->_config->template['useFileHash'] ? hash_file($this->_config->template['useFileHash'], $this->_templatePath . $this->_templateFile) : ''));
+			$templateCache = $this->_cache->getItem('template_' . str_replace(
+				['{', '}', '(', ')', '/', '\\', '@', ':'],
+				['|', '|', '|', '|', '.', '.', '-', '_'],
+				$this->_templatePath . $this->_templateFile
+			) . ($this->_config->template['useFileHash'] ? hash_file($this->_config->template['useFileHash'], $this->_templatePath . $this->_templateFile) : ''));
 
-			if (!$templateCache->isHit()) {
+			if (null === $content = $templateCache->get()) {
 
 				// load template from file
 				$content = $this->_readFile($this->_templateFile);
@@ -146,10 +146,6 @@ class Template {
 				$templateCache->set($content);
 				$templateCache->expiresAfter($this->_config->cache['duration']);
 				$this->_cache->save($templateCache);
-			} else {
-
-				// load from cache
-				$content = $templateCache->get();
 			}
 
 		} else {
@@ -166,7 +162,7 @@ class Template {
 		// apply default variable-bindings
 		$content = $this->_applyBindings($content, array_merge([
 			'base_url' => $this->_network->getBaseURL(),
-			'name'     => str_replace(['_'], ' ', pathinfo($this->_templateFile, PATHINFO_FILENAME)),
+			'name'     => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->_config->template['extension'], '', $this->_templateFile), PATHINFO_FILENAME)))),
 		], $this->_config->template['defaultBindings']));
 
 		// run user-defined filters above content

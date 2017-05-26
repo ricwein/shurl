@@ -10,13 +10,21 @@ div.container {
 	max-width: 100%;
 	margin: 0 auto;
 	color: #333;
-	margin-top: -50px;
+}
+
+div.container.header {
+	margin-top: -15vh;
+}
+
+.center {
+	text-align: center;
+	display: block;
 }
 
 img.icon {
 	display: block;
 	margin: auto;
-	padding-bottom: 50px;
+	padding-bottom: 5vh;
 }
 
 a {
@@ -30,10 +38,17 @@ h1 {
 }
 
 p {
-	border-top: 1px solid #DFDFDF;
 	letter-spacing: 1px;
 	line-height: 200%;
 	font-weight: 300;
 	color: #666;
-	padding: 5px 20px 20px 20px;
+	padding: 0px 20px 0px 20px;
+}
+
+p:first-of-type {
+	padding-top: 5px;
+	border-top: 1px solid #DFDFDF;
+}
+p:last-of-type {
+	padding-bottom: 20px;
 }
