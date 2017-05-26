@@ -99,7 +99,7 @@ class Application {
 			if ($slug === null) {
 				throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
 			} elseif ($slug === '') {
-				(new Template('welcome', $this->_config, $this->_network))->render();
+				(new Template('welcome', $this->_config, $this->_network, $this->_cache))->render();
 			}
 
 			$url = $this->getUrl($slug);
@@ -117,11 +117,11 @@ class Application {
 
 			$this->_network->setStatusCode($statusCode > 0 ? (int) $statusCode : 500);
 
-			$template = new Template('error', $this->_config, $this->_network);
+			$template = new Template('error', $this->_config, $this->_network, $this->_cache);
 			$template->render([
-				'code'    => $statusCode,
-				'type'    => (new \ReflectionClass($exception))->getShortName(),
-				'message' => $exception->getMessage(),
+				'code'       => $statusCode,
+				'type'       => (new \ReflectionClass($exception))->getShortName(),
+				'getMessage' => $exception,
 			]);
 		}
 

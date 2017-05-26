@@ -68,6 +68,7 @@ class Config {
 			'duration' => 3600,
 			'prefix'   => '',
 			'config'   => [
+				'path'     => __DIR__ . '/../../cache/',
 				'memcache' => [],
 				'redis'    => [],
 			],
@@ -83,9 +84,14 @@ class Config {
 		],
 
 		'template'        => [
-			'path'            => 'assets/templates/',
-			'extension'       => '.html',
+			'path'            => 'assets/pages/',
+			'extension'       => '.html.twig',
 			'defaultBindings' => [],
+			'useFileHash'     => 'md5', // false or hash method as string
+			'route'           => [
+				'error'   => 'default/error',
+				'welcome' => 'default/welcome',
+			],
 		],
 	];
 

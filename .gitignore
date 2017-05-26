@@ -1,5 +1,9 @@
 /vendor/
 /config/
 /logs/
+/cache/
+/assets/pages/custom/
+/public/css/
+/public/images/
 *.psd
 resources/*.png
