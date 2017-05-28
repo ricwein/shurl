@@ -80,6 +80,7 @@ class Config {
 			'store'      => [
 				'ip'        => true,
 				'userAgent' => true,
+				'referrer'  => true,
 			],
 		],
 

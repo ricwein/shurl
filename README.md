@@ -11,7 +11,7 @@ To init a new MySQL database, just run the queries in [resources/database.sql](r
 
 ## Configuration
 
-The default configuration is stored in [src/config/Config.php](src/config/Config.php) `$__config` Array, but can be overwritten by adding a config-file at `config/config.yml`.
+The default configuration is stored in [src/Config/Config.php](src/Config/Config.php) `$__config` Array, but can be overwritten by adding a config-file at `config/config.yml`.
 It should has the following format:
 
 ```yaml

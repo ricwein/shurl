@@ -303,6 +303,7 @@ class Application {
 		$visit = [
 			'redirect_id' => $url->getRedirectID(),
 			'visited'     => date($this->_config->timestampFormat['database']),
+			'origin'      => $this->_network->getBaseURL(),
 		];
 
 		// track user-data, if dnt is not set
@@ -317,6 +318,12 @@ class Application {
 				// save userAgent, if enabled
 				$visit['user_agent'] = $this->_network->getUserAgent();
 			}
+
+			if ($this->_config->tracking['store']['referrer']) {
+				// save userAgent, if enabled
+				$visit['referrer'] = $this->_network->getReferrer();
+			}
+
 		}
 
 		// save visitor data

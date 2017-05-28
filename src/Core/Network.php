@@ -203,6 +203,13 @@ class Network {
 	}
 
 	/**
+	 * @return string|null
+	 */
+	protected function getReferrer() {
+		return $this->get('HTTP_REFERER', null);
+	}
+
+	/**
 	 * @param  string $name
 	 * @param  mixed $default
 	 * @return mixed
