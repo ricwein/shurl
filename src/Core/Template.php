@@ -161,7 +161,7 @@ class Template {
 
 		// apply default variable-bindings
 		$content = $this->_applyBindings($content, array_merge([
-			'base_url' => $this->_network->getBaseURL(),
+			'base_url' => $this->_network->getBaseURL($this->_config->rootURL),
 			'name'     => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->_config->template['extension'], '', $this->_templateFile), PATHINFO_FILENAME)))),
 		], $this->_config->template['defaultBindings']));
 

@@ -45,12 +45,6 @@ class Config {
 			'severity' => Logger::WARNING, // 300
 		],
 
-		'cache'           => [
-			// use http status code 301 (permanent) or 302 for redirects?
-			//  Clients will only tracked first time visiting the url, with 301 set!
-			'clientRedirectCaching' => false,
-		],
-
 		'rootURL'         => 'localhost',
 		'timestampFormat' => [
 			'database' => 'Y-m-d H:i:s',
@@ -62,12 +56,24 @@ class Config {
 			'salt'     => '',
 		],
 
+		'redirect'        => [
+
+			// use http status code 301 (permanent) or 302 for redirects?
+			// Clients will only tracked first time visiting the url, with permanent active!
+			'permanent'        => false,
+
+			// allow origin-URL content passthrough, without redirecting
+			// this causes all traffic being routed through this server
+			'allowPassthrough' => false,
+		],
+
 		'cache'           => [
-			'enabled'  => true,
-			'engine'   => 'auto',
-			'duration' => 3600,
-			'prefix'   => '',
-			'config'   => [
+			'enabled'     => true,
+			'engine'      => 'auto',
+			'duration'    => 3600, // 1h
+			'prefix'      => '',
+			'passthrough' => true,
+			'config'      => [
 				'path'     => __DIR__ . '/../../cache/',
 				'memcache' => [],
 				'redis'    => [],

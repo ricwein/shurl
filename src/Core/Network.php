@@ -1,7 +1,6 @@
 <?php
 
 namespace ricwein\shurl\Core;
-
 use ricwein\shurl\Config\Config;
 
 /**
@@ -15,31 +14,14 @@ class Network {
 	private static $__instance = null;
 
 	/**
-	 * @var Config
-	 */
-	protected $_config;
-
-	/**
 	 * provide singleton access for networking methods
-	 * @param Config|null $config
 	 * @return self
 	 */
-	public static function getInstance(Config $config = null): self {
+	public static function getInstance(): self {
 		if (static::$__instance === null) {
-			static::$__instance = new static($config);
+			static::$__instance = new static();
 		}
 		return static::$__instance;
-	}
-
-	/**
-	 * @param Config|null $config
-	 */
-	public function __construct(Config $config = null) {
-		if ($config === null) {
-			$this->_config = Config::getInstance();
-		} else {
-			$this->_config = $config;
-		}
 	}
 
 	/**
@@ -67,11 +49,12 @@ class Network {
 	 *
 	 * this ends the current code execution!
 	 * @param URL $url
+	 * @param bool $permanent
 	 * @return void
 	 */
-	protected function redirect(URL $url) {
+	protected function redirect(URL $url, bool $permanent = false) {
 
-		if ($this->_config->cache['clientRedirectCaching'] && !$this->_config->development) {
+		if ($permanent) {
 
 			$this
 				->setStatusCode(301)
@@ -88,6 +71,40 @@ class Network {
 		}
 
 		$this->setHeader('Location', $url->getOriginal());
+		exit(0);
+	}
+
+	/**
+	 * allows server-side originURL fetching
+	 * and direct rendering to client, without redirection
+	 * @param URL $url
+	 * @param Cache|null $cache
+	 * @return void
+	 */
+	protected function passthrough(URL $url, Cache $cache = null) {
+
+		if ($cache === null) {
+			$headers = get_headers($url->getOriginal());
+			$this->setHeaders($headers);
+			readfile($url->getOriginal());
+			exit(0);
+		}
+
+		$contentCache = $cache->getItem('url_' . $url->getHash());
+
+		if (null === $ressource = $contentCache->get()) {
+			$ressource = [
+				'headers' => get_headers($url->getOriginal()),
+				'content' => file_get_contents($url->getOriginal()),
+			];
+
+			$contentCache->set($ressource);
+			$contentCache->expiresAfter(Config::getInstance()->cache['duration']);
+			$cache->save($contentCache);
+		}
+
+		$this->setHeaders($ressource['headers']);
+		echo $ressource['content'];
 		exit(0);
 	}
 
@@ -183,17 +200,18 @@ class Network {
 	}
 
 	/**
+	 * @param string $default
 	 * @return string
 	 */
-	protected function getBaseURL(): string{
+	protected function getBaseURL(string $default): string{
 		$schema = ($this->isSecured() ? 'https' : 'http');
 
 		if (false === $host = $this->get('HTTP_HOST', false)) {
-			return $this->_config->rootURL;
+			return $default;
 		}
 
 		if (false === $path = $this->get('REQUEST_URI', false)) {
-			return $this->_config->rootURL;
+			return $default;
 		}
 
 		$host = rtrim($host, '/');
@@ -228,6 +246,21 @@ class Network {
 	 */
 	protected function setHeader(string $name, string $message): self{
 		header($name . ': ' . $message);
+		return $this;
+	}
+
+	/**
+	 * @param array $headers
+	 * @return self
+	 */
+	protected function setHeaders(array $headers): self {
+		foreach ($headers as $key => $value) {
+			if (is_int($key)) {
+				header($value);
+			} else {
+				$this->setHeader($key, $value);
+			}
+		}
 		return $this;
 	}
 

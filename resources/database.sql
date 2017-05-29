@@ -6,12 +6,13 @@ CREATE TABLE `redirects` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `expires` timestamp NULL DEFAULT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `public` tinyint(1) NOT NULL DEFAULT '0',
+  `passthrough` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug_unique` (`slug`),
   KEY `temp` (`created`),
   KEY `search` (`slug`,`enabled`,`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- Create syntax for TABLE 'urls'
 CREATE TABLE `urls` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

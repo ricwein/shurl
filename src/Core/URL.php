@@ -30,15 +30,22 @@ class URL {
 	protected $_shortenedURL;
 
 	/**
+	 * @var array
+	 */
+	protected $_additionals;
+
+	/**
 	 * @param int $redirectID
 	 * @param string $slug
 	 * @param string $originalURL
 	 * @param Config $config
+	 * @param array $additionals
 	 */
-	public function __construct(int $redirectID, string $slug, string $originalURL, Config $config) {
+	public function __construct(int $redirectID, string $slug, string $originalURL, Config $config, array $additionals = []) {
 		$this->_redirectID  = $redirectID;
 		$this->_slug        = $slug;
 		$this->_originalURL = $originalURL;
+		$this->_additionals = $additionals;
 
 		$this->_shortenedURL = rtrim($config->rootURL, '/') . '/' . $slug;
 	}
@@ -69,6 +76,25 @@ class URL {
 	 */
 	public function getSlug(): string {
 		return $this->_slug;
+	}
+
+	/**
+	 * @param string $name
+	 * @return mixed|null
+	 */
+	public function getAdditional(string $name) {
+		if (array_key_exists($name, $this->_additionals)) {
+			return $this->_additionals[$name];
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHash(): string {
+		return hash(Config::getInstance()->urls['hash'], $this->_originalURL, false);
 	}
 
 }

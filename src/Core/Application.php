@@ -54,7 +54,7 @@ class Application {
 		}
 
 		// init new network class
-		$this->_network = Network::getInstance($this->_config);
+		$this->_network = Network::getInstance();
 
 		if ($this->_config->cache['enabled']) {
 			$this->_cache = new Cache($this->_config->cache['engine'], $this->_config->cache['config']);
@@ -104,7 +104,11 @@ class Application {
 
 			$url = $this->getUrl($slug);
 
-			$this->_network->redirect($url);
+			if (!$this->_config->redirect['allowPassthrough'] || !$url->getAdditional('passthrough')) {
+				$this->_network->redirect($url, $this->_config->redirect['permanent'] && !$this->_config->development);
+			} else {
+				$this->_network->passthrough($url, ($this->_config->cache['passthrough'] ? $this->_cache : null));
+			}
 
 		} catch (\Throwable $exception) {
 
@@ -278,7 +282,7 @@ class Application {
 			$db->orWhereNull('redirects.expires');
 		});
 
-		$query->select(['redirects.id', 'redirects.slug', 'urls.url']);
+		$query->select(['redirects.id', 'redirects.slug', 'redirects.passthrough', 'urls.url']);
 		$url = $query->first();
 
 		// slug not found
@@ -286,7 +290,9 @@ class Application {
 			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
 		}
 
-		return new URL($url->id, $url->slug, $url->url, $this->_config);
+		return new URL($url->id, $url->slug, $url->url, $this->_config, [
+			'passthrough' => (bool) $url->passthrough,
+		]);
 	}
 
 	/**
@@ -303,7 +309,7 @@ class Application {
 		$visit = [
 			'redirect_id' => $url->getRedirectID(),
 			'visited'     => date($this->_config->timestampFormat['database']),
-			'origin'      => $this->_network->getBaseURL(),
+			'origin'      => $this->_network->getBaseURL($this->_config->rootURL),
 		];
 
 		// track user-data, if dnt is not set
