@@ -105,9 +105,9 @@ class Application {
 			$url = $this->getUrl($slug);
 
 			if (!$this->_config->redirect['allowPassthrough'] || !$url->getAdditional('passthrough')) {
-				$this->_network->redirect($url, $this->_config->redirect['permanent'] && !$this->_config->development);
+				$this->_network->redirect($this->_config, $url, $this->_config->redirect['permanent'] && !$this->_config->development);
 			} else {
-				$this->_network->passthrough($url, ($this->_config->cache['passthrough'] ? $this->_cache : null));
+				$this->_network->passthrough($this->_config, $url, ($this->_config->cache['passthrough'] ? $this->_cache : null));
 			}
 
 		} catch (\Throwable $exception) {

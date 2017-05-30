@@ -48,26 +48,22 @@ class Network {
 	 * send redirect header
 	 *
 	 * this ends the current code execution!
+	 * @param Config $config
 	 * @param URL $url
 	 * @param bool $permanent
 	 * @return void
 	 */
-	protected function redirect(URL $url, bool $permanent = false) {
+	protected function redirect(Config $config, URL $url, bool $permanent = false) {
 
 		if ($permanent) {
 
-			$this
-				->setStatusCode(301)
-				->setHeader('Cache-Control', 'max-age=3600');
+			$this->setStatusCode(301);
+			$this->setHeaders(['Cache-Control' => 'max-age=' . $config->cache['duration']]);
 
 		} else {
 
-			$this
-				->setStatusCode(302)
-				->setHeader('Pragma', 'no-cache')
-				->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-				->setHeader('Expires', '0');
-
+			$this->setStatusCode(302);
+			$this->setHeaders(['Pragma' => 'no-cache', 'Cache-Control' => 'no-cache, no-store, must-revalidate', 'Expires' => '0']);
 		}
 
 		$this->setHeader('Location', $url->getOriginal());
@@ -77,33 +73,58 @@ class Network {
 	/**
 	 * allows server-side originURL fetching
 	 * and direct rendering to client, without redirection
+	 * @param Config $config
 	 * @param URL $url
 	 * @param Cache|null $cache
 	 * @return void
 	 */
-	protected function passthrough(URL $url, Cache $cache = null) {
+	protected function passthrough(Config $config, URL $url, Cache $cache = null) {
+
+		// list of headers which should be keept while passthrough
+		$passthroughHeaders = array_flip([
+			'Content-Type', 'Content-Length', 'ETag', 'Last-Modified',
+		]);
 
 		if ($cache === null) {
-			$headers = get_headers($url->getOriginal());
-			$this->setHeaders($headers);
+
+			// fetch original header, but only re-set selected
+			$this->setHeaders(array_intersect_key(get_headers($url->getOriginal(), 1), $passthroughHeaders));
+
+			// set cache-control for permanent files
+			if (!$config->redirect['permanent']) {
+				$this->setHeaders(['Pragma' => 'no-cache', 'Cache-Control' => 'no-cache, no-store, must-revalidate', 'Expires' => '0']);
+			} else {
+				$this->setHeaders(['Cache-Control' => 'max-age=' . $config->cache['duration']]);
+			}
+
+			// since we don't want to cache here, we directly print read lines
 			readfile($url->getOriginal());
+
 			exit(0);
 		}
 
 		$contentCache = $cache->getItem('url_' . $url->getHash());
-
 		if (null === $ressource = $contentCache->get()) {
+
+			// fetch orignal headers and content
 			$ressource = [
-				'headers' => get_headers($url->getOriginal()),
+				'headers' => array_intersect_key(get_headers($url->getOriginal(), 1), $passthroughHeaders),
 				'content' => file_get_contents($url->getOriginal()),
 			];
 
 			$contentCache->set($ressource);
-			$contentCache->expiresAfter(Config::getInstance()->cache['duration']);
+			$contentCache->expiresAfter($config->cache['duration']);
 			$cache->save($contentCache);
 		}
 
 		$this->setHeaders($ressource['headers']);
+
+		if (!$config->redirect['permanent']) {
+			$this->setHeaders(['Pragma' => 'no-cache', 'Cache-Control' => 'no-cache, no-store, must-revalidate', 'Expires' => '0']);
+		} else {
+			$this->setHeaders(['Cache-Control' => 'max-age=' . $config->cache['duration']]);
+		}
+
 		echo $ressource['content'];
 		exit(0);
 	}
