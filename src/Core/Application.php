@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Template;
 
 /**
@@ -271,7 +272,7 @@ class Application {
 	 * fetch url details from database
 	 * @param string $slug
 	 * @return URL
-	 * @throws \UnexpectedValueException
+	 * @throws NotFound
 	 */
 	protected function _fetchURL(string $slug): URL{
 		$query = $this->_pixie->table('redirects');
@@ -290,7 +291,7 @@ class Application {
 
 		// slug not found
 		if (!$url) {
-			throw new \UnexpectedValueException('Unknown Slug, URL not found', 404);
+			throw new NotFound('Unknown Slug, URL not found', 404);
 		}
 
 		return new URL($url->id, $url->slug, $url->url, $this->_config, [

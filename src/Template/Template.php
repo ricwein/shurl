@@ -5,6 +5,7 @@ namespace ricwein\shurl\Template;
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Cache;
 use ricwein\shurl\Core\Network;
+use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Filter\Assets;
 use ricwein\shurl\Template\Filter\Bindings;
@@ -55,10 +56,12 @@ class Template {
 	 * @param Config $config
 	 * @param Network $network
 	 * @param Cache|null $cache
+	 * @return void
+	 * @throws NotFound
 	 */
 	public function __construct(string $templateFile, Config $config, Network $network, Cache $cache = null) {
 		if (false === $templatePath = realpath(__DIR__ . '/../../' . trim($config->template['path'], '/'))) {
-			throw new \UnexpectedValueException('template path not found', 404);
+			throw new NotFound('template path not found', 404);
 		}
 
 		$this->_config  = $config;

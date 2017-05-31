@@ -3,6 +3,7 @@
 namespace ricwein\shurl\Template\Engine;
 
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Exception\NotFound;
 
 /**
  * provide File interaction methods
@@ -32,7 +33,7 @@ class File {
 	 * @param  string $filePath
 	 * @param bool $searchPath
 	 * @return string
-	 * @throws \UnexpectedValueException
+	 * @throws NotFound
 	 */
 	public function read(string $filePath, bool $searchPath = false): string {
 		if ($searchPath) {
@@ -43,13 +44,13 @@ class File {
 			return $content;
 		}
 
-		throw new \UnexpectedValueException('unable to read template', 404);
+		throw new NotFound('unable to read template', 404);
 	}
 
 	/**
 	 * @param string $filename
 	 * @return string
-	 * @throws \UnexpectedValueException
+	 * @throws NotFound
 	 */
 	public function path(string $filename): string{
 		$extension = ltrim($this->_config->template['extension'], '.');
@@ -72,7 +73,7 @@ class File {
 			}
 		}
 
-		throw new \UnexpectedValueException(sprintf('no template found for \'%s\'', $filename), 404);
+		throw new NotFound(sprintf('no template found for \'%s\'', $filename), 404);
 	}
 
 	/**
