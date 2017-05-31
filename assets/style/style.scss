@@ -1,0 +1,56 @@
+body {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	background-color: $backgroundColor;
+	padding-top: 30vh;
+}
+
+div.container {
+	background-color: $backgroundColor;
+	width: 600px;
+	max-width: 100%;
+	margin: 0 auto;
+	color: $accentColor;
+
+	&.header {
+		margin-top: -15vh;
+	}
+}
+
+.center {
+	text-align: center;
+	display: block;
+}
+
+img.icon {
+	background-color: $primaryColor;
+	display: block;
+	margin: auto auto 5vh;
+	border-radius: 50%;
+}
+
+a {
+	font-weight: bold;
+	color: $accentColor;
+	text-decoration: none;
+}
+
+h1 {
+	padding: 20px 20px 5px;
+}
+
+p {
+	letter-spacing: 1px;
+	line-height: 200%;
+	font-weight: 300;
+	color: lighten($accentColor, 20%);
+	padding: 0 20px;
+
+	&:first-of-type {
+		padding-top: 5px;
+		border-top: 1px solid darken($backgroundColor, 8%);
+	}
+
+	&:last-of-type {
+		padding-bottom: 20px;
+	}
+}

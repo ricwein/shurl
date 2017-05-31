@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Template\Template;
 
 /**
  * shurl core class
@@ -69,7 +70,9 @@ class Application {
 		));
 
 		// register as global fallback handler
-		ErrorHandler::register($this->_logger);
+		if (!$this->_config->development) {
+			ErrorHandler::register($this->_logger);
+		}
 
 		try {
 

@@ -91,13 +91,17 @@ class Config {
 		],
 
 		'template'        => [
-			'path'            => 'assets/pages/',
-			'extension'       => '.html.twig',
-			'defaultBindings' => [],
-			'useFileHash'     => 'md5', // false or hash method as string
-			'route'           => [
-				'error'   => 'default/error',
-				'welcome' => 'default/welcome',
+			'path'        => 'assets/',
+			'extension'   => '.html.twig',
+			'variables'   => [
+				'primaryColor'    => '#28AAE1',
+				'accentColor'     => '#333',
+				'backgroundColor' => '#EFEFEF',
+			],
+			'useFileHash' => 'md5', // false or hash method as string
+			'route'       => [
+				'error'   => 'pages/default/error',
+				'welcome' => 'pages/default/welcome',
 			],
 		],
 	];

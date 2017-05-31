@@ -13,6 +13,7 @@ CREATE TABLE `redirects` (
   KEY `temp` (`created`),
   KEY `search` (`slug`,`enabled`,`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Create syntax for TABLE 'urls'
 CREATE TABLE `urls` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
