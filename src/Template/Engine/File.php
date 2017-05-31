@@ -80,8 +80,8 @@ class File {
 	 * @return string
 	 * @throws \UnexpectedValueException
 	 */
-	public function pathCacheSave(string $filename): string{
-		$path = $this->path($filename);
+	public function cachePath(string $filename): string{
+		$path = $this->_basepath . $this->path($filename);
 		return str_replace(
 			['{', '}', '(', ')', '/', '\\', '@', ':'],
 			['|', '|', '|', '|', '.', '.', '-', '_'],
@@ -90,12 +90,14 @@ class File {
 	}
 
 	/**
-	 * @param string $algo
 	 * @param string $filename
 	 * @return string
 	 */
-	public function hash(string $algo, string $filename): string {
-		return hash_file($algo, $this->path($filename));
+	public function hash(string $filename): string {
+		if (!$this->_config->template['useFileHash']) {
+			return '';
+		}
+		return hash_file($this->_config->template['useFileHash'], $this->_basepath . $this->path($filename));
 	}
 
 	/**

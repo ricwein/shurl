@@ -93,8 +93,11 @@ class Template {
 			return $this->_compile($bindings, $filter);
 		}
 
-		$fileHash      = ($this->_config->template['useFileHash'] ? $this->_file->hash($this->_templateFile) : '');
-		$templateCache = $this->_cache->getItem('template_' . $this->_file->pathCacheSave($this->_templateFile) . $fileHash);
+		$templateCache = $this->_cache->getItem(
+			'template_' .
+			$this->_file->cachePath($this->_templateFile) .
+			$this->_file->hash($this->_templateFile)
+		);
 
 		if (null === $content = $templateCache->get()) {
 
