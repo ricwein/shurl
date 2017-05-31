@@ -22,9 +22,11 @@ div.container.header {
 }
 
 img.icon {
+	background-color: #28AAE1;
 	display: block;
 	margin: auto;
-	padding-bottom: 5vh;
+	margin-bottom: 5vh;
+	border-radius: 50%;
 }
 
 a {

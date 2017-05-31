@@ -6,4 +6,5 @@
 /public/css/
 /public/images/
 *.psd
+*.ai
 resources/*.png
