@@ -174,8 +174,12 @@ class Application {
 		// only select currently enabled entries
 		$query->where('enabled', '=', true);
 		$query->where(function ($db) {
-			$db->where($db->raw('expires > NOW()'));
-			$db->orWhereNull('expires');
+			$db->where($db->raw('valid_to > NOW()'));
+			$db->orWhereNull('valid_to');
+		});
+		$query->where(function ($db) {
+			$db->where($db->raw('valid_from < NOW()'));
+			$db->orWhereNull('valid_from');
 		});
 		return $query->first()->count;
 	}
@@ -184,11 +188,12 @@ class Application {
 	 * add new URL to index
 	 * @param  string $url
 	 * @param  string|null $slug
+	 * @param  string|null $starts
 	 * @param  string|null $expires
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function addUrl(string $url, string $slug = null, string $expires = null): URL{
+	public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, bool $passthrough = false): URL{
 
 		$url = trim($url);
 
@@ -200,16 +205,13 @@ class Application {
 		$query = $this->_pixie->table('urls');
 		$query->onDuplicateKeyUpdate($data);
 
+		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
 		if (0 >= $urlID = $query->insert($data)) {
-
-			// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
 			$urlTemp = $this->_pixie->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
 			if (!$urlTemp || !isset($urlTemp->id)) {
 				throw new \UnexpectedValueException('database error: unable to insert data', 500);
 			}
-
 			$urlID = $urlTemp->id;
-
 		}
 
 		if ($slug === null) {
@@ -220,15 +222,25 @@ class Application {
 		}
 
 		$data = [
-			'url_id'  => $urlID,
-			'slug'    => trim($slug),
-			'expires' => ($expires !== null ? date($this->_config->timestampFormat['database'], strtotime($expires)) : null),
-			'enabled' => 1,
+			'url_id'      => $urlID,
+			'slug'        => trim($slug),
+			'valid_to'    => ($expires !== null ? date($this->_config->timestampFormat['database'], strtotime($expires)) : null),
+			'valid_from'  => ($starts !== null ? date($this->_config->timestampFormat['database'], strtotime($starts)) : null),
+			'passthrough' => $passthrough,
+			'enabled'     => 1,
 		];
 
 		$query = $this->_pixie->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
-		$redirectID = $query->insert($data);
+
+		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
+		if (0 >= $redirectID = $query->insert($data)) {
+			$redirectTemp = $this->_pixie->table('redirects')->where('url_id', $data['url_id'])->where('slug', $data['slug'])->select('id')->first();
+			if (!$redirectTemp || !isset($redirectTemp->id)) {
+				throw new \UnexpectedValueException('database error: unable to insert data', 500);
+			}
+			$redirectID = $redirectTemp->id;
+		}
 
 		return new URL($redirectID, $data['slug'], $url, $this->_config);
 	}
@@ -282,8 +294,12 @@ class Application {
 		$query->where('redirects.slug', trim($slug));
 		$query->where('redirects.enabled', true);
 		$query->where(function ($db) {
-			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.expires > NOW()'));
-			$db->orWhereNull('redirects.expires');
+			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.valid_to > NOW()'));
+			$db->orWhereNull('redirects.valid_to');
+		});
+		$query->where(function ($db) {
+			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.valid_from < NOW()'));
+			$db->orWhereNull('redirects.valid_from');
 		});
 
 		$query->select(['redirects.id', 'redirects.slug', 'redirects.passthrough', 'urls.url']);

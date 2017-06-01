@@ -50,8 +50,12 @@ class Show extends Command {
 		if (!$input->getOption('all')) {
 			$query->where('redirects.enabled', '=', true);
 			$query->where(function ($db) {
-				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.expires > NOW()'));
-				$db->orWhereNull('redirects.expires');
+				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_to > NOW()'));
+				$db->orWhereNull('redirects.valid_to');
+			});
+			$query->where(function ($db) {
+				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_from < NOW()'));
+				$db->orWhereNull('redirects.valid_from');
 			});
 		}
 

@@ -88,7 +88,7 @@ class Network {
 		if ($cache === null) {
 
 			// fetch original header, but only re-set selected
-			$this->setHeaders(array_intersect_key(get_headers($url->getOriginal(), 1), $passthroughHeaders));
+			$this->setHeaders(array_intersect_key($this->getHeaders($url->getOriginal(), 1), $passthroughHeaders));
 
 			// set cache-control for permanent files
 			if (!$config->redirect['permanent']) {
@@ -108,7 +108,7 @@ class Network {
 
 			// fetch orignal headers and content
 			$ressource = [
-				'headers' => array_intersect_key(get_headers($url->getOriginal(), 1), $passthroughHeaders),
+				'headers' => array_intersect_key($this->getHeaders($url->getOriginal(), 1), $passthroughHeaders),
 				'content' => file_get_contents($url->getOriginal()),
 			];
 
@@ -127,6 +127,34 @@ class Network {
 
 		echo $ressource['content'];
 		exit(0);
+	}
+
+	/**
+	 * @param string $url
+	 * @return array
+	 */
+	protected function getHeaders(string $url = null): array{
+		$headers = [];
+
+		if ($url !== null) {
+			$headers = get_headers($url, 1);
+			foreach ($headers as &$value) {
+				if (is_array($value)) {
+					$value = reset($value);
+				}
+			}
+			return $headers;
+		}
+
+		foreach ($_SERVER as $key => $value) {
+			if (strpos($key, 'HTTP_') !== 0) {
+				continue;
+			}
+			$header           = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
+			$headers[$header] = $value;
+		}
+
+		return $headers;
 	}
 
 	/**
@@ -263,23 +291,25 @@ class Network {
 	/**
 	 * @param string $name
 	 * @param string $message
+	 * @param bool $replace
 	 * @return self
 	 */
-	protected function setHeader(string $name, string $message): self{
-		header($name . ': ' . $message);
+	protected function setHeader(string $name, string $message, bool $replace = true): self{
+		header($name . ': ' . $message, $replace);
 		return $this;
 	}
 
 	/**
 	 * @param array $headers
+	 * @param bool $replace
 	 * @return self
 	 */
-	protected function setHeaders(array $headers): self {
+	protected function setHeaders(array $headers, bool $replace = true): self {
 		foreach ($headers as $key => $value) {
 			if (is_int($key)) {
-				header($value);
+				header($value, $replace);
 			} else {
-				$this->setHeader($key, $value);
+				$this->setHeader($key, implode('; ', (array) $value), $replace);
 			}
 		}
 		return $this;

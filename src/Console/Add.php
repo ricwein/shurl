@@ -25,6 +25,8 @@ class Add extends Command {
 			new InputArgument('url', InputArgument::OPTIONAL, 'The URL which should be shortened'),
 			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening'),
 			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL'),
+			new InputOption('starts', 'f', InputOption::VALUE_OPTIONAL, 'set start date for this URL'),
+			new InputOption('passthrough', null, InputOption::VALUE_NONE, 'make url passthrough only'),
 		]);
 	}
 
@@ -77,9 +79,9 @@ class Add extends Command {
 
 		$app = new Application();
 		if (null === $slug = $input->getOption('slug')) {
-			$info = $app->addUrl($url, null, $input->getOption('expires'));
+			$info = $app->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
 		} else {
-			$info = $app->addUrl($url, ltrim($slug, '= '), $input->getOption('expires'));
+			$info = $app->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
 		}
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);

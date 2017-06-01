@@ -52,15 +52,19 @@ class Remove extends Command {
 
 		$query->where('redirects.enabled', '=', true);
 		$query->where(function ($db) {
-			$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.expires > NOW()'));
-			$db->orWhereNull('redirects.expires');
+			$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_to > NOW()'));
+			$db->orWhereNull('redirects.valid_to');
+		});
+		$query->where(function ($db) {
+			$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_from < NOW()'));
+			$db->orWhereNull('redirects.valid_from');
 		});
 		$query->where(function ($db) use ($search) {
 			$db->where('slug', 'LIKE', '%' . $search . '%');
 			$db->orWhere('url', 'LIKE', '%' . $search . '%');
 		});
 
-		$query->select(['redirects.id', 'redirects.slug', 'redirects.expires', 'urls.url']);
+		$query->select(['redirects.id', 'redirects.slug', 'urls.url']);
 		$selection = $query->get();
 
 		$helper   = $this->getHelper('question');
