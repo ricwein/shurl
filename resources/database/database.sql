@@ -1,5 +1,7 @@
+CREATE DATABASE IF NOT EXISTS `shurl`
+
 -- Create syntax for TABLE 'redirects'
-CREATE TABLE `redirects` (
+CREATE TABLE IF NOT EXISTS `redirects` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `url_id` bigint(20) NOT NULL,
   `slug` varchar(64) NOT NULL DEFAULT '',
@@ -16,7 +18,7 @@ CREATE TABLE `redirects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create syntax for TABLE 'urls'
-CREATE TABLE `urls` (
+CREATE TABLE IF NOT EXISTS `urls` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `url` text NOT NULL,
   `hash` varchar(64) NOT NULL DEFAULT '',
@@ -25,7 +27,7 @@ CREATE TABLE `urls` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create syntax for TABLE 'visits'
-CREATE TABLE `visits` (
+CREATE TABLE IF NOT EXISTS `visits` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT,
   `redirect_id` bigint(20) unsigned NOT NULL,
   `visited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

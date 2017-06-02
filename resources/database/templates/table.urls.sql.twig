@@ -1,0 +1,8 @@
+-- Create syntax for TABLE 'urls'
+CREATE TABLE IF NOT EXISTS `{{ prefix }}urls` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `url` text NOT NULL,
+  `hash` varchar(64) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hash` (`hash`)
+) ENGINE=InnoDB DEFAULT CHARSET={{ charset }};

@@ -3,15 +3,14 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use ricwein\shurl\Console\Add;
-use ricwein\shurl\Console\Remove;
-use ricwein\shurl\Console\Show;
+use ricwein\shurl\Console;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
-$application->add(new Add());
-$application->add(new Remove());
-$application->add(new Show());
+$application->add(new Console\Add());
+$application->add(new Console\Remove());
+$application->add(new Console\Show());
+$application->add(new Console\Init());
 
 $application->run();

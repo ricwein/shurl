@@ -7,7 +7,27 @@
 It's using a PDO Database Wrapper in the background, so you're not limited to MySQL!
 But even if so, this project uses prepared statements, to prevent sql injections.
 
-To init a new MySQL database, just run the queries in [resources/database.sql](resources/database.sql).
+## Install
+
+### project
+
+To create a new shurl instance, the project can be initialized through composer, just run the following command:
+
+```bash
+composer create-project ricwein/shurl -s dev
+```
+
+### Database
+
+Initializing the Database structure can be done two ways. Either run the static queries from [resources/database/database.sql](resources/database/database.sql), or use the `init` commandline tool.
+
+> This tool requires you, to first setup your wished database configuration! This can be done, as described in [Configuration](#configuration). A valid Database-user is required, and needs either: the database to be already existing, or rights to create a new one.
+
+```bash
+bin/shurl init
+```
+
+Since this tool, acknowledges your database-configuration, the resulting database-structure is customizable! use table-prefixes, custom charsets, or even another database name!
 
 ## Configuration
 
@@ -43,13 +63,13 @@ rootURL: https://fancy.url/shurl/
 
 ## Adding a new URL
 
-Adding a new URL to the shortener Server is done with the bundled CLI tool. Just run `./bin/shurl url:add`, and follow the instructions.
-For more Informations see `./bin/shurl url:add --help`.
+Adding a new URL to the shortener Server is done with the bundled CLI tool. Just run `bin/shurl url:add`, and follow the instructions.
+For more Informations see `bin/shurl url:add --help`.
 
 ## Remove an URL
 
-Removing an URL from the list, is as easy as adding one. Execute `./bin/shurl url:remove` from your command line should do the job.
+Removing an URL from the list, is as easy as adding one. Execute `bin/shurl url:remove` from your command line should do the job.
 
 ## List available URLs
 
-A list of all currently available URls can be accessed through: `./bin/shurl url:show`
+A list of all currently available URls can be accessed through: `bin/shurl url:show`

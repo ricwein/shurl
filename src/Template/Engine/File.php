@@ -64,6 +64,7 @@ class File {
 
 		// default lookup for filenames, with and without default extension
 		$fileNames[] = $filename;
+		$fileNames[] = trim(dirname($filename) . '/' . $filename, '/.') . '.' . $extension;
 		$fileNames[] = trim(dirname($filename) . '/' . pathinfo($filename, PATHINFO_FILENAME), '/.') . '.' . $extension;
 
 		// try each possible filename/path to find valid file
@@ -73,7 +74,7 @@ class File {
 			}
 		}
 
-		throw new NotFound(sprintf('no template found for \'%s\'', $filename), 404);
+		throw new NotFound(sprintf('no file found for \'%s\' in \'%s\'', $filename, $this->_basepath), 404);
 	}
 
 	/**
