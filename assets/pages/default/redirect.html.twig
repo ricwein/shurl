@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		{% include 'pages/templates/head' %}
+		<meta http-equiv="refresh" content="{{ wait }}; url={{ url }}" />
+		<link rel="canonical" href="{{ url }}"/>
+	</head>
+	<body>
+		<div class="container header">
+			<h1 class="center">Redirecting in <i>{{ wait }}s</i></h1>
+			<span class="center">
+				<p>to: <a href="{{ url }}" rel="noreferrer nofollow">{{ url }}</a></p>
+			</span>
+		</div>
+		<script>
+			if(window.location.hash) {
+				document.getElementById('url').setAttribute('content', '0; url={{ url }}' + window.location.hash);
+			}
+		</script>
+	</body>
+</html>
