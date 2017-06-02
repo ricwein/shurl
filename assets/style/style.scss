@@ -27,12 +27,17 @@ img.icon {
 	display: block;
 	margin: auto auto 5vh;
 	border-radius: 50%;
+	box-shadow: 0 0 50px transparentize($primaryColor, 20%);
 }
 
 a {
 	font-weight: bold;
 	color: $accentColor;
 	text-decoration: none;
+}
+
+b {
+	color: darken($accentColor, 20%);
 }
 
 h1 {
