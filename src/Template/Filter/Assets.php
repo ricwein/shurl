@@ -48,7 +48,7 @@ class Assets extends Functions {
 		}
 
 		// include other template files
-		$content = preg_replace_callback($this->getRegex('asset(.*)'), function ($match) use ($bindings, $currentDepth, $tag, $scss) {
+		$content = preg_replace_callback($this->getRegex('asset(.*)'), function (array $match) use ($bindings, $currentDepth, $tag, $scss): string {
 			$filecontent = $this->_file->read(trim($match[1], '\'" '), true);
 			$filecontent = $scss->compile($filecontent);
 

@@ -60,11 +60,21 @@ class Config {
 
 			// use http status code 301 (permanent) or 302 for redirects?
 			// Clients will only tracked first time visiting the url, with permanent active!
-			'permanent'        => false,
+			'permanent' => false,
 
-			// allow origin-URL content passthrough, without redirecting
-			// this causes all traffic being routed through this server
-			'allowPassthrough' => false,
+			'allow'     => [
+
+				// allow origin-URL content passthrough, without redirecting
+				// this causes all traffic being routed through this server
+				'passthrough' => false,
+
+				// redirect to html page, which then redirects per html "refresh" tag
+				// this can prevent destination-referrer tracking
+				'html'        => true,
+			],
+
+			// wait timeout for redirect-methods like html-refresh, which supports this
+			'wait'      => 1,
 		],
 
 		'cache'           => [
@@ -100,8 +110,9 @@ class Config {
 			],
 			'useFileHash' => 'md5', // false or hash method as string
 			'route'       => [
-				'error'   => 'pages/default/error',
-				'welcome' => 'pages/default/welcome',
+				'error'    => 'pages/default/error',
+				'welcome'  => 'pages/default/welcome',
+				'redirect' => 'pages/default/redirect',
 			],
 		],
 	];

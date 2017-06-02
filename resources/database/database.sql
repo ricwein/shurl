@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `redirects` (
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   `public` tinyint(1) NOT NULL DEFAULT '0',
   `passthrough` tinyint(1) NOT NULL DEFAULT '0',
+  `dereferrer` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug_unique` (`slug`),
   KEY `temp` (`created`),

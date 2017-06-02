@@ -40,7 +40,8 @@ database:
   username: usernamehere
   prefix: shurl_
 
-development: true
+cache:
+  enabled: true
 ```
 
 This way it's possible, to override each single setting.

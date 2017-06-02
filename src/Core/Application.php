@@ -108,10 +108,15 @@ class Application {
 
 			$url = $this->getUrl($slug);
 
-			if (!$this->_config->redirect['allowPassthrough'] || !$url->getAdditional('passthrough')) {
-				$this->_network->redirect($this->_config, $url, $this->_config->redirect['permanent'] && !$this->_config->development);
-			} else {
+			if ($this->_config->redirect['allow']['passthrough'] && $url->getAdditional('passthrough')) {
 				$this->_network->passthrough($this->_config, $url, ($this->_config->cache['passthrough'] ? $this->_cache : null));
+			} elseif ($this->_config->redirect['allow']['html'] && $url->getAdditional('dereferrer')) {
+				(new Template('redirect', $this->_config, $this->_network, $this->_cache))->render([
+					'url'  => $url->getOriginal(),
+					'wait' => (int) $this->_config->redirect['wait'],
+				]);
+			} else {
+				$this->_network->redirect($this->_config, $url, $this->_config->redirect['permanent'] && !$this->_config->development);
 			}
 
 		} catch (\Throwable $exception) {
@@ -190,6 +195,7 @@ class Application {
 	 * @param  string|null $slug
 	 * @param  string|null $starts
 	 * @param  string|null $expires
+	 * @param  bool $passthrough
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
@@ -302,7 +308,7 @@ class Application {
 			$db->orWhereNull('redirects.valid_from');
 		});
 
-		$query->select(['redirects.id', 'redirects.slug', 'redirects.passthrough', 'urls.url']);
+		$query->select(['redirects.id', 'redirects.slug', 'redirects.passthrough', 'redirects.dereferrer', 'urls.url']);
 		$url = $query->first();
 
 		// slug not found
@@ -312,6 +318,7 @@ class Application {
 
 		return new URL($url->id, $url->slug, $url->url, $this->_config, [
 			'passthrough' => (bool) $url->passthrough,
+			'dereferrer'  => (bool) $url->dereferrer,
 		]);
 	}
 

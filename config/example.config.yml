@@ -3,5 +3,4 @@ database:
     password: secretpw
     username: notroot
 
-development: false
-rootURL: fancy.url/shurl/
+rootURL: https://fancy.url/shurl/

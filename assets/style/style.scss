@@ -54,4 +54,8 @@ p {
 	&:last-of-type {
 		padding-bottom: 20px;
 	}
+
+	a {
+		color: $primaryColor;
+	}
 }

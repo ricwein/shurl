@@ -9,6 +9,7 @@ use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Filter\Assets;
 use ricwein\shurl\Template\Filter\Bindings;
+use ricwein\shurl\Template\Filter\Comments;
 use ricwein\shurl\Template\Filter\Includes;
 
 /**
@@ -131,6 +132,7 @@ class Template {
 		$content = $this->_file->read($this->_templateFile);
 
 		// run parsers
+		$content = (new Comments())->replace($content);
 		$content = (new Includes($this->_file))->replace($content);
 		$content = (new Bindings())->replace($content, $bindings);
 		$content = (new Assets($this->_file, $this->_config))->replace($content, $bindings);
