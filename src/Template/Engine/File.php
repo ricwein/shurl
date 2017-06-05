@@ -64,8 +64,9 @@ class File {
 
 		// default lookup for filenames, with and without default extension
 		$fileNames[] = $filename;
-		$fileNames[] = trim(dirname($filename) . '/' . $filename, '/.') . '.' . $extension;
+		$fileNames[] = trim($filename, '/.') . '.' . $extension;
 		$fileNames[] = trim(dirname($filename) . '/' . pathinfo($filename, PATHINFO_FILENAME), '/.') . '.' . $extension;
+		$fileNames[] = trim(pathinfo($filename, PATHINFO_FILENAME), '/.') . '.' . $extension;
 
 		// try each possible filename/path to find valid file
 		foreach ($fileNames as $file) {
