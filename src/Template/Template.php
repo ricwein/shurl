@@ -132,8 +132,8 @@ class Template {
 		$content = $this->_file->read($this->_templateFile);
 
 		// run parsers
-		$content = (new Comments())->replace($content);
 		$content = (new Includes($this->_file))->replace($content);
+		$content = (new Comments())->replace($content);
 		$content = (new Bindings())->replace($content, $bindings);
 		$content = (new Assets($this->_file, $this->_config))->replace($content, $bindings);
 

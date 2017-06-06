@@ -103,11 +103,7 @@ class Config {
 		'template'        => [
 			'path'        => 'assets/',
 			'extension'   => '.html.twig',
-			'variables'   => [
-				'primaryColor'    => '#28AAE1',
-				'accentColor'     => '#333',
-				'backgroundColor' => '#EFEFEF',
-			],
+			'variables'   => [],
 			'useFileHash' => 'md5', // false or hash method as string
 			'route'       => [
 				'error'    => 'pages/default/error',

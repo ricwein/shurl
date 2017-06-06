@@ -49,10 +49,11 @@ class File {
 
 	/**
 	 * @param string $filename
+	 * @param bool $dirOnly
 	 * @return string
 	 * @throws NotFound
 	 */
-	public function path(string $filename): string{
+	public function path(string $filename, bool $dirOnly = false): string{
 		$extension = ltrim($this->_config->template['extension'], '.');
 		$fileNames = [];
 
@@ -71,11 +72,22 @@ class File {
 		// try each possible filename/path to find valid file
 		foreach ($fileNames as $file) {
 			if (file_exists($this->_basepath . '/' . $file) && is_readable($this->_basepath . '/' . $file)) {
-				return $file;
+				return ($dirOnly ? dirname($file) : $file);
 			}
 		}
 
 		throw new NotFound(sprintf('no file found for \'%s\' in \'%s\'', $filename, $this->_basepath), 404);
+	}
+
+	/**
+	 * @param string $filename
+	 * @param bool $dirOnly
+	 * @return string
+	 * @throws NotFound
+	 */
+	public function fullPath(string $filename, bool $dirOnly = false): string{
+		$filepath = $this->path($filename, $dirOnly);
+		return $this->_basepath . $filepath;
 	}
 
 	/**
