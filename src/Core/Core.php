@@ -95,8 +95,8 @@ class Core {
 	 */
 	public function redirect(URL $url, Response $response) {
 
-		switch ($url->getMode()) {
-			case 'html':$this->viewTemplate('redirect', ['url' => $url->getOriginal()]);
+		switch ($url->mode()) {
+			case 'html':$this->viewTemplate('redirect', ['url' => $url]);
 			case 'passthrough':(new Redirect())->passthrough($this->config, $url, $response, ($this->config->cache['passthrough'] ? $this->cache : null));
 			default:(new Redirect())->rewrite($this->config, $url, $response, $this->config->redirect['permanent'] && !$this->config->development);
 		}
@@ -144,11 +144,11 @@ class Core {
 		// set http response code from exception
 		http_response_code($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
 
-		$this->viewTemplate('error', [
+		$this->viewTemplate('error', ['exception' => [
 			'type'    => (new \ReflectionClass($throwable))->getShortName(),
 			'code'    => $throwable->getCode(),
 			'message' => $throwable->getMessage(),
-		]);
+		]]);
 	}
 
 	/**

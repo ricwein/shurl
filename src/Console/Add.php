@@ -91,8 +91,8 @@ class Add extends Command {
 		}
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);
-		$output->writeln('Original URL:  ' . $info->getOriginal());
-		$output->writeln('Slug:          ' . $info->getSlug());
-		$output->writeln('Shortened URL: ' . $info->getShortened());
+		$output->writeln('Original URL:  ' . $info->original);
+		$output->writeln('Slug:          ' . $info->slug);
+		$output->writeln('Shortened URL: ' . $info->shortened);
 	}
 }

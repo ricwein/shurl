@@ -15,100 +15,74 @@ class URL {
 	const MODES = ['redirect', 'html', 'passthrough'];
 
 	/**
+	 * redirect ID
 	 * @var int
 	 */
-	protected $_redirectID;
+	protected $id;
+
+	/**
+	 * original URL
+	 * @var string
+	 */
+	protected $original;
 
 	/**
 	 * @var string
 	 */
-	protected $_originalURL;
+	protected $slug;
 
 	/**
 	 * @var string
 	 */
-	protected $_slug;
-
-	/**
-	 * @var string
-	 */
-	protected $_shortenedURL;
+	protected $shortened;
 
 	/**
 	 * @var array
 	 */
-	protected $_additionals;
+	protected $additionals;
 
 	/**
 	 * @var string
 	 */
-	protected $_mode;
+	protected $mode;
 
 	/**
-	 * @param int $redirectID
+	 * @param int $id
 	 * @param string $slug
-	 * @param string $originalURL
+	 * @param string $original
 	 * @param string $mode
 	 * @param Config $config
 	 * @param array $additionals
 	 */
-	public function __construct(int $redirectID, string $slug, string $originalURL, string $mode, Config $config, array $additionals = []) {
+	public function __construct(int $id, string $slug, string $original, string $mode, Config $config, array $additionals = []) {
 		$mode = strtolower(trim($mode));
 		if (!in_array($mode, static::MODES)) {
 			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode', $mode));
 		}
 
-		$this->_redirectID  = $redirectID;
-		$this->_slug        = $slug;
-		$this->_originalURL = $originalURL;
-		$this->_additionals = $additionals;
-		$this->_mode        = $mode;
+		$this->id          = $id;
+		$this->slug        = $slug;
+		$this->original    = $original;
+		$this->additionals = $additionals;
+		$this->mode        = $mode;
 
-		$this->_shortenedURL = rtrim($config->rootURL, '/') . '/' . $slug;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getRedirectID(): int {
-		return $this->_redirectID;
+		$this->shortened = rtrim($config->rootURL, '/') . '/' . $slug;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getOriginal(): string {
-		return $this->_originalURL;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getShortened(): string {
-		return $this->_shortenedURL;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getSlug(): string {
-		return $this->_slug;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getMode(): string {
-		return $this->_mode;
+	public function mode(): string {
+		return $this->mode;
 	}
 
 	/**
 	 * @param string $name
 	 * @return mixed|null
 	 */
-	public function getAdditional(string $name) {
-		if (array_key_exists($name, $this->_additionals)) {
-			return $this->_additionals[$name];
+	public function additional(string $name) {
+		if (array_key_exists($name, $this->additionals)) {
+			return $this->additionals[$name];
 		} else {
 			return null;
 		}
@@ -117,15 +91,34 @@ class URL {
 	/**
 	 * @return string
 	 */
-	public function getHash(): string {
-		return hash(Config::getInstance()->urls['hash'], $this->_originalURL, false);
+	public function hash(): string {
+		return hash(Config::getInstance()->urls['hash'], $this->original, false);
 	}
 
 	/**
 	 * @return string
 	 */
 	public function __toString(): string {
-		return $this->_originalURL;
+		return $this->original;
+	}
+
+	/**
+	 * @param string $name
+	 * @return string|int
+	 */
+	public function __get(string $name) {
+		if (property_exists($this, $name)) {
+			return $this->$name;
+		}
+		return null;
+	}
+
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	public function __isset(string $name): bool {
+		return property_exists($this, $name);
 	}
 
 }

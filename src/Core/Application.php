@@ -43,7 +43,6 @@ class Application {
 
 		// match and redirect slugs
 		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response) {
-
 			$url = $this->core->getUrl($request->slug);
 
 			$this->core->track($url, $request);
@@ -53,21 +52,22 @@ class Application {
 		// match and preview slugs
 		$klein->respond('GET', '/preview/[:slug](/)?', function (Request $request) {
 			$url = $this->core->getUrl($request->slug);
+
 			$this->core->track($url, $request);
 			$this->core->viewTemplate('preview', [
-				'slug' => $request->slug,
-				'url'  => $url->getOriginal(),
+				'url' => $url,
 			]);
 		});
 
 		// match and preview slugs
 		$klein->respond('GET', '/api/[:slug](/)?', function (Request $request, Response $response) {
 			$url = $this->core->getUrl($request->slug);
+
 			$this->core->track($url, $request);
 			$response->json([
-				'id'       => $url->getRedirectID(),
-				'slug'     => $url->getSlug(),
-				'original' => $url->getOriginal(),
+				'id'       => $url->id,
+				'slug'     => $url->slug,
+				'original' => $url->original,
 			]);
 			exit(0);
 		});

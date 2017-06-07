@@ -124,8 +124,9 @@ class Template {
 	protected function _compile($bindings = null, callable $filter = null): string{
 
 		$bindings = array_merge((array) $bindings, [
-			'template.name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->config->views['extension'], '', $this->templateFile), PATHINFO_FILENAME)))),
-			'name'          => ucfirst(strtolower($this->config->name)),
+			'template' => ['name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->config->views['extension'], '', $this->templateFile), PATHINFO_FILENAME))))],
+			'config'   => $this->config,
+			'name'     => ucfirst(strtolower($this->config->name)),
 		]);
 
 		// load template from file

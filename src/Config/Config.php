@@ -183,4 +183,12 @@ class Config {
 		$this->__config[$name] = $value;
 	}
 
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	public function __isset(string $name): bool {
+		return array_key_exists($name, $this->__config);
+	}
+
 }

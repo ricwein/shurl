@@ -34,7 +34,7 @@ class Redirect {
 			$response->header('Expires', '0');
 		}
 
-		$response->header('Location', $url->getOriginal());
+		$response->header('Location', $url->original);
 		$response->send();
 	}
 
@@ -57,7 +57,7 @@ class Redirect {
 		if ($cache === null) {
 
 			// fetch original header, but only re-set selected
-			$headers = array_intersect_key($this->getHeaders($url->getOriginal(), 1), $passthroughHeaders);
+			$headers = array_intersect_key($this->getHeaders($url->original, 1), $passthroughHeaders);
 			foreach ($headers as $key => $value) {
 				$response->header($key, $value);
 			}
@@ -72,18 +72,18 @@ class Redirect {
 			}
 
 			// since we don't want to cache here, we directly print read lines
-			readfile($url->getOriginal());
+			readfile($url->original);
 
 			exit(0);
 		}
 
-		$contentCache = $cache->getItem('url_' . $url->getHash());
+		$contentCache = $cache->getItem('url_' . $url->hash());
 		if (null === $ressource = $contentCache->get()) {
 
 			// fetch orignal headers and content
 			$ressource = [
-				'headers' => array_intersect_key($this->getHeaders($url->getOriginal(), 1), $passthroughHeaders),
-				'content' => file_get_contents($url->getOriginal()),
+				'headers' => array_intersect_key($this->getHeaders($url->original, 1), $passthroughHeaders),
+				'content' => file_get_contents($url->original),
 			];
 
 			$contentCache->set($ressource);

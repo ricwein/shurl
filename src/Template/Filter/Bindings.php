@@ -5,48 +5,53 @@ namespace ricwein\shurl\Template\Filter;
 use ricwein\shurl\Template\Engine\Variables;
 
 /**
- * simple Template parser with Twig-like syntax
+ * replaces twig variables with values from arrays or objects
  */
 class Bindings extends Variables {
 
 	/**
 	 * @param string $content
 	 * @param array|object|null $bindings varaibles to be replaced
-	 * @param int $currentDepth
 	 * @return string
 	 */
-	protected function replace(string $content, $bindings = null, int $currentDepth = 0): string {
+	protected function replace(string $content, $bindings = null): string {
 
 		if ($bindings === null) {
 			return $content;
 		}
 
-		// iterate through all values
-		foreach ($bindings as $key => $value) {
-			if ($value === null || is_scalar($value)) {
+		// replace all variables
+		$content = preg_replace_callback($this->getRegex('([^}]+)'), function ($match) use ($bindings): string {
+			$variable = explode('.', trim($match[1]));
 
-				// replace values if matching with the following excaped keys
-				$content = $this->_strReplace($key, $value, $content);
+			// traverse template variable
+			$current = $bindings;
+			foreach ($variable as $value) {
 
-			} elseif (is_object($value) && method_exists($value, $key)) {
-
-				// replace variable with result of methods
-				$content = $this->_strReplace($key, call_user_func_array([$value, $key], []), $content);
-
-			} elseif ((is_array($value) || is_object($value)) && $currentDepth <= self::MAX_DEPTH) {
-
-				// recursive call to apply() if value is iteraterable
-				$content = $this->replace($content, $value, false, $currentDepth + 1);
-
-			} else {
-
-				// catch all other data-types
-				$content = $this->_strReplace($key, '\'' . gettype($value) . '\'', $content);
+				// match against current bindings tree
+				if (is_array($current) && array_key_exists($value, $current)) {
+					$current = $current[$value];
+				} elseif (is_object($current) && (property_exists($current, $value) || isset($current->$value))) {
+					$current = $current->$value;
+				} elseif (is_object($current) && method_exists($current, $value)) {
+					$current = $current->$value();
+				} else {
+					break; // no more entries found
+				}
 
 			}
-		}
+
+			// check for return type
+			if (is_scalar($current)) {
+				return $current;
+			} elseif (is_object($current) && method_exists($current, '__toString')) {
+				return (string) $current;
+			} else {
+				return '';
+			}
+
+		}, $content);
 
 		return $content;
 	}
-
 }
