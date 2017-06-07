@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		{% include 'templates/head' %}
+		<link rel="canonical" href="{{ url }}"/>
+	</head>
+	<body>
+		<div class="container header">
+			<h2 class="center">{{ slug }}</h2>
+			<span class="center">
+				<p>resolves to: <a href="{{ url }}" rel="noreferrer nofollow">{{ url }}</a></p>
+			</span>
+		</div>
+	</body>
+</html>

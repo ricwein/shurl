@@ -54,13 +54,13 @@ class File {
 	 * @throws NotFound
 	 */
 	public function path(string $filename, bool $dirOnly = false): string{
-		$extension = ltrim($this->_config->template['extension'], '.');
+		$extension = ltrim($this->_config->views['extension'], '.');
 		$fileNames = [];
 
 		// name defined in routes, look them up
-		if (isset($this->_config->template['route'][$filename])) {
-			$fileNames[] = $this->_config->template['route'][$filename];
-			$fileNames[] = trim(dirname($this->_config->template['route'][$filename]) . '/' . pathinfo($this->_config->template['route'][$filename], PATHINFO_FILENAME), '/.') . '.' . $extension;
+		if (isset($this->_config->views['route'][$filename])) {
+			$fileNames[] = $this->_config->views['route'][$filename];
+			$fileNames[] = trim(dirname($this->_config->views['route'][$filename]) . '/' . pathinfo($this->_config->views['route'][$filename], PATHINFO_FILENAME), '/.') . '.' . $extension;
 		}
 
 		// default lookup for filenames, with and without default extension
@@ -109,10 +109,10 @@ class File {
 	 * @return string
 	 */
 	public function hash(string $filename): string {
-		if (!$this->_config->template['useFileHash']) {
+		if (!$this->_config->views['useFileHash']) {
 			return '';
 		}
-		return hash_file($this->_config->template['useFileHash'], $this->_basepath . $this->path($filename));
+		return hash_file($this->_config->views['useFileHash'], $this->_basepath . $this->path($filename));
 	}
 
 	/**

@@ -1,6 +1,7 @@
 {
     "name": "ricwein/shurl",
     "description": "PHP based URL shortener",
+    "keywords": ["url", "shortener"],
     "type": "project",
     "require": {
         "php": ">= 7.0.0",
@@ -10,7 +11,8 @@
         "symfony/console": "3.4.x-dev",
         "monolog/monolog": "^2.0@dev",
         "hashids/hashids": "^2.1@dev",
-        "leafo/scssphp": "dev-master"
+        "leafo/scssphp": "dev-master",
+        "klein/klein": "dev-master"
     },
     "license": "MIT",
     "authors": [

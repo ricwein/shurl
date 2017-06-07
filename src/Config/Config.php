@@ -20,7 +20,7 @@ class Config {
 	 * @var array
 	 */
 	private $__config = [
-
+		'name'            => 'shurl',
 		'development'     => false,
 
 		'configFiles'     => [
@@ -54,6 +54,8 @@ class Config {
 			'alphabet' => 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ0123456789',
 			'hash'     => 'sha256',
 			'salt'     => '',
+
+			// reserved paths (slugs)
 			'reserved' => [
 				'assets', 'images', // frontend ressources
 				'api', 'preview', // shurl features
@@ -65,17 +67,6 @@ class Config {
 			// use http status code 301 (permanent) or 302 for redirects?
 			// Clients will only tracked first time visiting the url, with permanent active!
 			'permanent' => false,
-
-			'allow'     => [
-
-				// allow origin-URL content passthrough, without redirecting
-				// this causes all traffic being routed through this server
-				'passthrough' => false,
-
-				// redirect to html page, which then redirects per html "refresh" tag
-				// this can prevent destination-referrer tracking
-				'html'        => true,
-			],
 
 			// wait timeout for redirect-methods like html-refresh, which supports this
 			'wait'      => 1,
@@ -104,16 +95,23 @@ class Config {
 			],
 		],
 
-		'template'        => [
-			'path'        => 'assets/',
+		'views'           => [
+			'path'        => 'views/',
 			'extension'   => '.html.twig',
 			'variables'   => [],
 			'useFileHash' => 'md5', // false or hash method as string
 			'route'       => [
-				'error'    => 'pages/default/error',
-				'welcome'  => 'pages/default/welcome',
-				'redirect' => 'pages/default/redirect',
+				'error'    => 'pages/error',
+				'welcome'  => 'pages/welcome',
+				'redirect' => 'pages/redirect',
+				'preview'  => 'pages/preview',
 			],
+		],
+
+		'assets'          => [
+			'path'      => 'assets/',
+			'variables' => [],
+			'inline'    => false,
 		],
 	];
 

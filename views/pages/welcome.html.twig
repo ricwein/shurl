@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		{% include 'templates/head' %}
+	</head>
+	<body>
+		<div class="container header">
+			<img src="/images/Icon.png" class="icon" alt="{{ name }} Icon" />
+			<h1 class="center">Welcome to {{ name }}</h1>
+			<span class="center">
+				<p><b>{{ count }}</b> Links</p>
+				<p>are powered by this {{ name }} instance</p>
+			</span>
+		</div>
+	</body>
+</html>

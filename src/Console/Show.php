@@ -71,7 +71,7 @@ class Show extends Command {
 		}
 
 		$entries = [];
-		$header  = ['Hits', 'Slug', 'URL', 'created'];
+		$header  = ['Hits', 'Slug', 'URL', 'created', 'valid from', 'valid to', 'mode'];
 
 		// add additional header entry
 		if ($input->getOption('shortenedURL')) {
@@ -83,9 +83,12 @@ class Show extends Command {
 
 			$url = [
 				'hits'   => $entry->hits,
-				'slug'   => $entry->slug,
+				'slug'   => '<comment>' . $entry->slug . '</comment>',
 				'url'    => $entry->url,
 				'create' => $entry->created,
+				'from'   => ($entry->valid_from ? $entry->valid_from : '-'),
+				'to'     => ($entry->valid_to ? $entry->valid_to : '-'),
+				'mode'   => '<info>' . $entry->mode . '</info>',
 			];
 
 			// also add full shortened URL

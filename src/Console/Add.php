@@ -3,6 +3,7 @@
 namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Core\Core;
+use ricwein\shurl\Core\URL;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +27,7 @@ class Add extends Command {
 			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening'),
 			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL'),
 			new InputOption('starts', 'f', InputOption::VALUE_OPTIONAL, 'set start date for this URL'),
-			new InputOption('passthrough', null, InputOption::VALUE_NONE, 'make url passthrough only'),
+			new InputOption('as', null, InputOption::VALUE_REQUIRED, 'choose redirect mode <comment>[available: "' . implode('", "', URL::MODES) . '"]</comment>', 'redirect'),
 		]);
 	}
 
@@ -36,6 +37,11 @@ class Add extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$helper = $this->getHelper('question');
+
+		$mode = $input->getOption('as');
+		if (!in_array($mode, URL::MODES)) {
+			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode, please use one of the following: ' . implode(', ', URL::MODES), $mode));
+		}
 
 		// fetch url
 		$url = $input->getArgument('url');
@@ -79,9 +85,9 @@ class Add extends Command {
 
 		$core = new Core();
 		if (null === $slug = $input->getOption('slug')) {
-			$info = $core->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
+			$info = $core->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $mode);
 		} else {
-			$info = $core->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
+			$info = $core->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $mode);
 		}
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);

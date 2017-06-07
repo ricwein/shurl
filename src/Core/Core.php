@@ -3,6 +3,8 @@
 namespace ricwein\shurl\Core;
 
 use Hashids\Hashids;
+use Klein\Request;
+use Klein\Response;
 use Monolog\ErrorHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -10,6 +12,8 @@ use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Exception\NotFound;
+use ricwein\shurl\Template\Engine\File;
+use ricwein\shurl\Template\Filter\Assets;
 use ricwein\shurl\Template\Template;
 
 /**
@@ -20,27 +24,22 @@ class Core {
 	/**
 	 * @var Config
 	 */
-	protected $_config;
-
-	/**
-	 * @var Network
-	 */
-	protected $_network;
+	protected $config;
 
 	/**
 	 * @var QueryBuilderHandler
 	 */
-	protected $_pixie;
+	protected $pixie;
 
 	/**
 	 * @var Logger
 	 */
-	protected $_logger;
+	protected $logger;
 
 	/**
 	 * @var Cache|null
 	 */
-	protected $_cache = null;
+	protected $cache = null;
 
 	/**
 	 * init new shurl Core
@@ -50,37 +49,34 @@ class Core {
 
 		// allocate config instance
 		if ($config === null) {
-			$this->_config = Config::getInstance();
+			$this->config = Config::getInstance();
 		} else {
-			$this->_config = $config;
+			$this->config = $config;
 		}
 
-		// init new network class
-		$this->_network = Network::getInstance();
-
-		if ($this->_config->cache['enabled']) {
-			$this->_cache = new Cache($this->_config->cache['engine'], $this->_config->cache['config']);
-			$this->_cache->setPrefix($this->_config->cache['prefix']);
+		if ($this->config->cache['enabled']) {
+			$this->cache = new Cache($this->config->cache['engine'], $this->config->cache['config']);
+			$this->cache->setPrefix($this->config->cache['prefix']);
 		}
 
 		// init new monolog logger
-		$this->_logger = new Logger('Logger Name');
-		$this->_logger->pushHandler(new StreamHandler(
-			__DIR__ . '/../../' . ltrim($this->_config->log['path'], '/'),
-			$this->_config->log['severity']
+		$this->logger = new Logger($this->config->name);
+		$this->logger->pushHandler(new StreamHandler(
+			__DIR__ . '/../../' . ltrim($this->config->log['path'], '/'),
+			$this->config->log['severity']
 		));
 
 		// register as global fallback handler
-		if (!$this->_config->development) {
-			ErrorHandler::register($this->_logger);
+		if (!$this->config->development) {
+			ErrorHandler::register($this->logger);
 		}
 
 		try {
 
 			// init new database connection and Pixie querybuilder
-			$this->_pixie = new QueryBuilderHandler(new Connection(
-				$this->_config->database['driver'],
-				$this->_config->database
+			$this->pixie = new QueryBuilderHandler(new Connection(
+				$this->config->database['driver'],
+				$this->config->database
 			));
 
 		} catch (\Throwable $exception) {
@@ -91,43 +87,38 @@ class Core {
 	}
 
 	/**
-	 * parse reqeusted shortened URL and redirect to original, if available
+	 * load and redirect to given url
+	 * @param URL $url
+	 * @param Response $response
 	 * @return void
 	 * @throws \Throwable
 	 */
-	public function route() {
-		$slug = $this->_network->getRoute();
+	public function redirect(URL $url, Response $response) {
 
-		try {
-
-			if ($slug === null) {
-				throw new \UnexpectedValueException('Server Failure, unable to parse URL', 500);
-			} elseif ($slug === '') {
-				$this->viewWelcome();
-			}
-
-			$url = $this->getUrl($slug);
-
-			if ($this->_config->redirect['allow']['passthrough'] && $url->getAdditional('passthrough')) {
-				$this->_network->passthrough($this->_config, $url, ($this->_config->cache['passthrough'] ? $this->_cache : null));
-			} elseif ($this->_config->redirect['allow']['html'] && $url->getAdditional('dereferrer')) {
-				$this->viewTemplate('redirect', [
-					'url' => $url->getOriginal(),
-				]);
-			} else {
-				$this->_network->redirect($this->_config, $url, $this->_config->redirect['permanent'] && !$this->_config->development);
-			}
-
-		} catch (\Throwable $exception) {
-
-			$this->_logger->addRecord(
-				($exception->getCode() > 0 && $exception->getCode() < 500 ? Logger::NOTICE : Logger::ERROR),
-				$exception->getMessage(),
-				['exception' => $exception]
-			);
-
-			$this->viewError($exception);
+		switch ($url->getMode()) {
+			case 'html':$this->viewTemplate('redirect', ['url' => $url->getOriginal()]);
+			case 'passthrough':(new Redirect())->passthrough($this->config, $url, $response, ($this->config->cache['passthrough'] ? $this->cache : null));
+			default:(new Redirect())->rewrite($this->config, $url, $response, $this->config->redirect['permanent'] && !$this->config->development);
 		}
+	}
+
+	/**
+	 * @param \Throwable $throwable
+	 * @return void
+	 */
+	public function handleException(\Throwable $throwable) {
+
+		if ($this->config->development) {
+			throw $throwable;
+		}
+
+		$this->logger->addRecord(
+			($throwable->getCode() > 0 && $throwable->getCode() < 500 ? Logger::NOTICE : Logger::ERROR),
+			$throwable->getMessage(),
+			['exception' => $throwable]
+		);
+
+		$this->viewError($throwable);
 	}
 
 	/**
@@ -138,9 +129,9 @@ class Core {
 	 * @throws \UnexpectedValueException
 	 */
 	public function viewTemplate(string $templateFile, $bindings = null, callable $filter = null) {
-		$template = new Template($templateFile, $this->_config, $this->_network, $this->_cache);
+		$template = new Template($templateFile, $this->config, $this->cache);
 		$template->render(array_merge([
-			'wait' => (int) $this->_config->redirect['wait'],
+			'wait' => (int) $this->config->redirect['wait'],
 		], $bindings));
 	}
 
@@ -150,7 +141,8 @@ class Core {
 	 */
 	public function viewError(\Throwable $throwable) {
 
-		$this->_network->setStatusCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
+		// set http response code from exception
+		http_response_code($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
 
 		$this->viewTemplate('error', [
 			'type'    => (new \ReflectionClass($throwable))->getShortName(),
@@ -160,23 +152,42 @@ class Core {
 	}
 
 	/**
+	 * @param string $assetName
+	 * @param Response $response
+	 * @return void
+	 */
+	public function viewAsset(string $assetName, Response $response) {
+		if (false === $assetPath = realpath(__DIR__ . '/../../' . trim($this->config->assets['path'], '/'))) {
+			throw new NotFound('assets path not found', 404);
+		}
+		$asset  = new File($assetPath, $this->config);
+		$parser = new Assets($asset, $this->config);
+		$styles = $parser->parse($assetName . '.scss');
+
+		$response->body($styles);
+		$response->header('Content-Type', 'text/css; charset=utf-8');
+		$response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+		$response->send();
+	}
+
+	/**
 	 * @return void
 	 */
 	public function viewWelcome() {
 
-		if ($this->_cache === null) {
+		if ($this->cache === null) {
 			$this->viewTemplate('welcome', [
 				'count' => $this->_getEntryCount(),
 			]);
 		}
 
-		$countCache = $this->_cache->getItem('count');
+		$countCache = $this->cache->getItem('count');
 
 		if (null === $count = $countCache->get()) {
 			$count = $this->_getEntryCount();
 			$countCache->set($count);
 			$countCache->expiresAfter(60);
-			$this->_cache->save($countCache);
+			$this->cache->save($countCache);
 		}
 
 		$this->viewTemplate('welcome', [
@@ -188,7 +199,7 @@ class Core {
 	 * @return int
 	 */
 	protected function _getEntryCount(): int{
-		$query = $this->_pixie->table('redirects');
+		$query = $this->pixie->table('redirects');
 		$query->select([$query->raw('COUNT(*) as count')]);
 
 		// only select currently enabled entries
@@ -210,25 +221,30 @@ class Core {
 	 * @param  string|null $slug
 	 * @param  string|null $starts
 	 * @param  string|null $expires
-	 * @param  bool $passthrough
+	 * @param  string $redirectMode URL::MODES
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
-	public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, bool $passthrough = false): URL{
+	public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, string $redirectMode): URL{
 
-		$url = trim($url);
+		$url          = trim($url);
+		$redirectMode = strtolower(trim($redirectMode));
+
+		if (!in_array($redirectMode, URL::MODES)) {
+			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode', $redirectMode));
+		}
 
 		$data = [
 			'url'  => $url,
-			'hash' => hash($this->_config->urls['hash'], $url, false),
+			'hash' => hash($this->config->urls['hash'], $url, false),
 		];
 
-		$query = $this->_pixie->table('urls');
+		$query = $this->pixie->table('urls');
 		$query->onDuplicateKeyUpdate($data);
 
 		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
 		if (0 >= $urlID = $query->insert($data)) {
-			$urlTemp = $this->_pixie->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
+			$urlTemp = $this->pixie->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
 			if (!$urlTemp || !isset($urlTemp->id)) {
 				throw new \UnexpectedValueException('database error: unable to insert data', 500);
 			}
@@ -237,35 +253,35 @@ class Core {
 
 		if ($slug === null) {
 
-			$hashidEngine = new Hashids($this->_config->urls['salt'], 3, $this->_config->urls['alphabet']);
+			$hashidEngine = new Hashids($this->config->urls['salt'], 3, $this->config->urls['alphabet']);
 			$slug         = $hashidEngine->encode($urlID);
 
-		} elseif (in_array($slug, $this->_config->urls['registered'])) {
+		} elseif (in_array($slug, $this->config->urls['reserved'])) {
 			throw new \UnexpectedValueException('the given slug is not allowed', 409);
 		}
 
 		$data = [
-			'url_id'      => $urlID,
-			'slug'        => trim($slug),
-			'valid_to'    => ($expires !== null ? date($this->_config->timestampFormat['database'], strtotime($expires)) : null),
-			'valid_from'  => ($starts !== null ? date($this->_config->timestampFormat['database'], strtotime($starts)) : null),
-			'passthrough' => $passthrough,
-			'enabled'     => 1,
+			'url_id'     => $urlID,
+			'slug'       => trim($slug),
+			'valid_to'   => ($expires !== null ? date($this->config->timestampFormat['database'], strtotime($expires)) : null),
+			'valid_from' => ($starts !== null ? date($this->config->timestampFormat['database'], strtotime($starts)) : null),
+			'mode'       => $redirectMode,
+			'enabled'    => 1,
 		];
 
-		$query = $this->_pixie->table('redirects');
+		$query = $this->pixie->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
 
 		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
 		if (0 >= $redirectID = $query->insert($data)) {
-			$redirectTemp = $this->_pixie->table('redirects')->where('url_id', $data['url_id'])->where('slug', $data['slug'])->select('id')->first();
+			$redirectTemp = $this->pixie->table('redirects')->where('url_id', $data['url_id'])->where('slug', $data['slug'])->select('id')->first();
 			if (!$redirectTemp || !isset($redirectTemp->id)) {
 				throw new \UnexpectedValueException('database error: unable to insert data', 500);
 			}
 			$redirectID = $redirectTemp->id;
 		}
 
-		return new URL($redirectID, $data['slug'], $url, $this->_config);
+		return new URL($redirectID, $data['slug'], $url, $redirectMode, $this->config);
 	}
 
 	/**
@@ -277,14 +293,13 @@ class Core {
 	public function getUrl(string $slug): URL {
 
 		// skipt cache, and fetch directly from database
-		if ($this->_cache === null) {
+		if ($this->cache === null) {
 			$url = $this->_fetchURL($slug);
-			$this->_trackVisit($url);
 			return $url;
 		}
 
 		// try a cache lookup first
-		$urlCache = $this->_cache->getItem('slug_' . str_replace(
+		$urlCache = $this->cache->getItem('slug_' . str_replace(
 			['{', '}', '(', ')', '/', '\\', '@', ':'],
 			['|', '|', '|', '|', '.', '.', '-', '_'],
 			$slug
@@ -295,11 +310,10 @@ class Core {
 			$url = $this->_fetchURL($slug);
 
 			$urlCache->set($url);
-			$urlCache->expiresAfter($this->_config->cache['duration']);
-			$this->_cache->save($urlCache);
+			$urlCache->expiresAfter($this->config->cache['duration']);
+			$this->cache->save($urlCache);
 		}
 
-		$this->_trackVisit($url);
 		return $url;
 	}
 
@@ -310,22 +324,22 @@ class Core {
 	 * @throws NotFound
 	 */
 	protected function _fetchURL(string $slug): URL{
-		$query = $this->_pixie->table('redirects');
+		$query = $this->pixie->table('redirects');
 
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 
 		$query->where('redirects.slug', trim($slug));
 		$query->where('redirects.enabled', true);
 		$query->where(function ($db) {
-			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.valid_to > NOW()'));
+			$db->where($db->raw($this->config->database['prefix'] . 'redirects.valid_to > NOW()'));
 			$db->orWhereNull('redirects.valid_to');
 		});
 		$query->where(function ($db) {
-			$db->where($db->raw($this->_config->database['prefix'] . 'redirects.valid_from < NOW()'));
+			$db->where($db->raw($this->config->database['prefix'] . 'redirects.valid_from < NOW()'));
 			$db->orWhereNull('redirects.valid_from');
 		});
 
-		$query->select(['redirects.id', 'redirects.slug', 'redirects.passthrough', 'redirects.dereferrer', 'urls.url']);
+		$query->select(['redirects.id', 'redirects.slug', 'redirects.mode', 'urls.url']);
 		$url = $query->first();
 
 		// slug not found
@@ -333,51 +347,71 @@ class Core {
 			throw new NotFound('Unknown Slug, URL not found', 404);
 		}
 
-		return new URL($url->id, $url->slug, $url->url, $this->_config, [
-			'passthrough' => (bool) $url->passthrough,
-			'dereferrer'  => (bool) $url->dereferrer,
-		]);
+		return new URL($url->id, $url->slug, $url->url, $url->mode, $this->config);
+	}
+
+	/**
+	 * @param Request $request
+	 * @return string
+	 */
+	public function getBaseURL(Request $request): string{
+		$schema = ($request->isSecure() ? 'https' : 'http');
+
+		if (false === $host = $request->server()->get('HTTP_HOST', false)) {
+			return $this->config->rootURL;
+		}
+
+		if (false === $path = $request->server()->get('REQUEST_URI', false)) {
+			return $this->config->rootURL;
+		}
+
+		$host = rtrim($host, '/');
+		$path = trim(str_replace($request->uri(), '', $path), '/');
+
+		return $schema . '://' . rtrim($host . '/' . $path, '/');
+
 	}
 
 	/**
 	 * handle url tracking
 	 * @param URL $url
+	 * @param Request $request
 	 * @return self
 	 */
-	protected function _trackVisit(URL $url): self {
+	public function track(URL $url, Request $request): self {
 
-		if (!$this->_config->tracking['enabled']) {
+		if (!$this->config->tracking['enabled']) {
 			return $this;
 		}
 
 		$visit = [
 			'redirect_id' => $url->getRedirectID(),
-			'visited'     => date($this->_config->timestampFormat['database']),
-			'origin'      => $this->_network->getBaseURL($this->_config->rootURL),
+			'visited'     => date($this->config->timestampFormat['database']),
+			'origin'      => $this->getBaseURL($request),
 		];
 
 		// track user-data, if dnt is not set
-		if (!$this->_config->tracking['respectDNT'] || !$this->_network->hasDNTSet()) {
+		if (!$this->config->tracking['respectDNT'] || ((int) $request->headers()->get('HTTP_DNT') === 1)) {
 
-			if ($this->_config->tracking['store']['ip']) {
+			if ($this->config->tracking['store']['ip']) {
 				// track IP, if either user doesn't send DNT, or we decided to ignore it
-				$visit['ip'] = inet_pton($this->_network->getIPAddr());
+				$visit['ip'] = inet_pton($request->ip());
 			}
 
-			if ($this->_config->tracking['store']['userAgent']) {
+			if ($this->config->tracking['store']['userAgent']) {
 				// save userAgent, if enabled
-				$visit['user_agent'] = $this->_network->getUserAgent();
+				$visit['user_agent'] = $request->userAgent();
 			}
 
-			if ($this->_config->tracking['store']['referrer']) {
+			if ($this->config->tracking['store']['referrer']) {
 				// save userAgent, if enabled
-				$visit['referrer'] = $this->_network->getReferrer();
+				$visit['referrer'] = $request->headers()->get('HTTP_REFERER');
 			}
 
 		}
 
 		// save visitor data
-		$query = $this->_pixie->table('visits');
+		$query = $this->pixie->table('visits');
 		$query->insert($visit);
 
 		return $this;
@@ -388,7 +422,7 @@ class Core {
 	 * @return QueryBuilderHandler
 	 */
 	public function getDB(): QueryBuilderHandler {
-		return $this->_pixie;
+		return $this->pixie;
 	}
 
 }

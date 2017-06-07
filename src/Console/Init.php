@@ -4,7 +4,6 @@ namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Core;
-use ricwein\shurl\Core\Network;
 use ricwein\shurl\Template\Template;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -39,7 +38,7 @@ class Init extends Command {
 		$config = Config::getInstance();
 
 		// override config, to allow using the templating-engine for sql files
-		$config->template = array_replace_recursive($config->template, [
+		$config->views = array_replace_recursive($config->views, [
 			'path'      => 'resources/database/templates',
 			'extension' => '.sql.twig',
 		]);
@@ -50,11 +49,11 @@ class Init extends Command {
 		// parse sql query files
 		$queries = '';
 		if ($input->getOption('dropforce')) {
-			$queries .= (new Template('drop.database', $config, new Network()))->make($config->database);
+			$queries .= (new Template('drop.database', $config))->make($config->database);
 		} elseif ($input->getOption('force')) {
-			$queries .= (new Template('drop.tables', $config, new Network()))->make($config->database);
+			$queries .= (new Template('drop.tables', $config))->make($config->database);
 		}
-		$queries .= (new Template('create', $config, new Network()))->make($config->database);
+		$queries .= (new Template('create', $config))->make($config->database);
 
 		// preprocess queries
 		$queries = preg_replace(['/(--.*)/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/'], '', $queries);

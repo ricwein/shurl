@@ -2,6 +2,9 @@
 
 namespace ricwein\shurl\Core;
 
+use Klein\Klein;
+use Klein\Request;
+use Klein\Response;
 use ricwein\shurl\Config\Config;
 
 /**
@@ -35,7 +38,57 @@ class Application {
 	 * @throws \Throwable
 	 */
 	public function route() {
-		$this->core->route();
+
+		$klein = new Klein();
+
+		// match and redirect slugs
+		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response) {
+
+			$url = $this->core->getUrl($request->slug);
+
+			$this->core->track($url, $request);
+			$this->core->redirect($url, $response);
+		});
+
+		// match and preview slugs
+		$klein->respond('GET', '/preview/[:slug](/)?', function (Request $request) {
+			$url = $this->core->getUrl($request->slug);
+			$this->core->track($url, $request);
+			$this->core->viewTemplate('preview', [
+				'slug' => $request->slug,
+				'url'  => $url->getOriginal(),
+			]);
+		});
+
+		// match and preview slugs
+		$klein->respond('GET', '/api/[:slug](/)?', function (Request $request, Response $response) {
+			$url = $this->core->getUrl($request->slug);
+			$this->core->track($url, $request);
+			$response->json([
+				'id'       => $url->getRedirectID(),
+				'slug'     => $url->getSlug(),
+				'original' => $url->getOriginal(),
+			]);
+			exit(0);
+		});
+
+		// match scss assets, and parse them
+		$klein->respond('GET', '/assets/css/[:stylesheet].css', function (Request $request, Response $response) {
+			$this->core->viewAsset($request->stylesheet, $response);
+		});
+
+		// show welcome page as default
+		$klein->respond('/', function (Request $request) {
+			$this->core->viewWelcome();
+		});
+
+		// run dispatcher and handle thrown exceptions
+		try {
+			$klein->dispatch();
+		} catch (\Throwable $throwable) {
+			$this->core->handleException($throwable);
+		}
+
 	}
 
 }

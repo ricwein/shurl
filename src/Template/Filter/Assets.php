@@ -17,7 +17,7 @@ class Assets extends Functions {
 	/**
 	 * @var Config
 	 */
-	protected $_config;
+	protected $config;
 
 	/**
 	 * @param File $file
@@ -25,50 +25,62 @@ class Assets extends Functions {
 	 */
 	public function __construct(File $file, Config $config) {
 		parent::__construct($file);
-		$this->_config = $config;
+		$this->config = $config;
 	}
 
 	/**
 	 * @param string $content
 	 * @param array $bindings
-	 * @param int $currentDepth
-	 * @param bool $tag
 	 * @return string
 	 */
-	protected function replace(string $content, array $bindings = [], int $currentDepth = 0, bool $tag = true): string{
-
-		$scss = new Compiler();
-		$scss->setImportPaths($this->_file->getBasepath());
-		$scss->setVariables($bindings);
-
-		if ($this->_config->development) {
-			$scss->setFormatter(new Expanded());
-		} else {
-			$scss->setFormatter(new Compressed());
-		}
+	protected function replace(string $content, array $bindings = []): string{
 
 		// include other template files
-		$content = preg_replace_callback($this->getRegex('asset(.*)'), function (array $match) use ($bindings, $currentDepth, $tag, $scss): string {
+		$content = preg_replace_callback($this->getRegex('asset(.*)'), function (array $match) use ($bindings): string {
 
 			$filename = trim($match[1], '\'" ');
 
-			$scss->addImportPath($this->_file->fullPath($filename, true));
-
-			$filecontent = $this->_file->read($filename, true);
-			$filecontent = $scss->compile($filecontent);
-
-			if ($tag) {
+			if ($this->config->assets['inline']) {
+				$filecontent = $this->parse($filename, $bindings);
 				$filecontent = '<style>' . trim($filecontent) . '</style>';
+				return $filecontent;
 			}
 
-			if ($currentDepth <= self::MAX_DEPTH) {
-				return $this->replace($filecontent, $bindings, $currentDepth + 1, false);
-			}
+			$filename = pathinfo($filename, PATHINFO_FILENAME) . '.css';
+			return '<link crossorigin="anonymous" href="/assets/css/' . $filename . '" media="all" rel="stylesheet" />';
 
-			return $filecontent;
 		}, $content);
 
 		return $content;
+	}
+
+	/**
+	 * @param string $filename
+	 * @param array $bindings
+	 * @return string
+	 */
+	public function parse(string $filename, array $bindings = []): string {
+
+		/**
+		 * @var Compiler
+		 */
+		static $compiler;
+
+		if ($compiler === null) {
+			$compiler = new Compiler();
+			$compiler->setImportPaths($this->_file->getBasepath());
+			if ($this->config->development) {
+				$compiler->setFormatter(new Expanded());
+			} else {
+				$compiler->setFormatter(new Compressed());
+			}
+		}
+
+		$compiler->setVariables($bindings);
+		$compiler->addImportPath($this->_file->fullPath($filename, true));
+
+		$filecontent = $this->_file->read($filename, true);
+		return $compiler->compile($filecontent);
 	}
 
 }
