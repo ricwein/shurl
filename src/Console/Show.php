@@ -3,7 +3,7 @@
 namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Config\Config;
-use ricwein\shurl\Core\Application;
+use ricwein\shurl\Core\Core;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,9 +35,9 @@ class Show extends Command {
 	 * @param OutputInterface $output
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$app = new Application();
+		$pixie = (new Core())->getDB();
 
-		$query = $app->getDB()->table('redirects');
+		$query = $pixie->table('redirects');
 
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 		$query->join('visits', 'redirects.id', '=', 'visits.redirect_id', 'LEFT');

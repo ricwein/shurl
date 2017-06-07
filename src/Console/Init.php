@@ -3,7 +3,7 @@
 namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Config\Config;
-use ricwein\shurl\Core\Application;
+use ricwein\shurl\Core\Core;
 use ricwein\shurl\Core\Network;
 use ricwein\shurl\Template\Template;
 use Symfony\Component\Console\Command\Command;
@@ -45,8 +45,7 @@ class Init extends Command {
 		]);
 
 		// init db-connection
-		$app   = new Application($config);
-		$pixie = $app->getDB();
+		$pixie = (new Core($config))->getDB();
 
 		// parse sql query files
 		$queries = '';

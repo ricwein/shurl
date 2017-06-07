@@ -2,7 +2,7 @@
 
 namespace ricwein\shurl\Console;
 
-use ricwein\shurl\Core\Application;
+use ricwein\shurl\Core\Core;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -77,11 +77,11 @@ class Add extends Command {
 
 		}
 
-		$app = new Application();
+		$core = new Core();
 		if (null === $slug = $input->getOption('slug')) {
-			$info = $app->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
+			$info = $core->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
 		} else {
-			$info = $app->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
+			$info = $core->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $input->getOption('passthrough'));
 		}
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);

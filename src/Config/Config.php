@@ -54,6 +54,10 @@ class Config {
 			'alphabet' => 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ0123456789',
 			'hash'     => 'sha256',
 			'salt'     => '',
+			'reserved' => [
+				'assets', 'images', // frontend ressources
+				'api', 'preview', // shurl features
+			],
 		],
 
 		'redirect'        => [
