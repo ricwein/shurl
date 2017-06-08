@@ -1,5 +1,5 @@
 -- Create syntax for TABLE 'visits'
-CREATE TABLE IF NOT EXISTS `{{ prefix }}visits` (
+CREATE TABLE IF NOT EXISTS `{{ config.database.prefix }}visits` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT,
   `redirect_id` bigint(20) unsigned NOT NULL,
   `visited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS `{{ prefix }}visits` (
   `referrer` text,
   PRIMARY KEY (`id`),
   KEY `url` (`redirect_id`)
-) ENGINE=InnoDB DEFAULT CHARSET={{ charset }};
+) ENGINE=InnoDB DEFAULT CHARSET={{ config.database.charset }};

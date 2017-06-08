@@ -1,5 +1,5 @@
 -- Create syntax for TABLE 'redirects'
-CREATE TABLE IF NOT EXISTS `{{ prefix }}redirects` (
+CREATE TABLE IF NOT EXISTS `{{ config.database.prefix }}redirects` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `url_id` bigint(20) NOT NULL,
   `slug` varchar(64) NOT NULL DEFAULT '',
@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS `{{ prefix }}redirects` (
   `valid_to` timestamp NULL DEFAULT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   `public` tinyint(1) NOT NULL DEFAULT '0',
-  `mode` enum('redirect','html','passthrough') NOT NULL DEFAULT 'redirect',
+  `mode` enum('{{ rewriteModes | implode('\', \'') }}') NOT NULL DEFAULT 'redirect',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug_unique` (`slug`),
   KEY `temp` (`created`),
   KEY `search` (`slug`,`enabled`,`valid_to`,`valid_from`)
-) ENGINE=InnoDB DEFAULT CHARSET={{ charset }};
+) ENGINE=InnoDB DEFAULT CHARSET={{ config.database.charset }};

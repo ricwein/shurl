@@ -1,2 +1,3 @@
-CREATE DATABASE IF NOT EXISTS `{{ database }}` DEFAULT CHARACTER SET = `{{ charset }}`;
-USE `{{ database }}`;
+-- Create syntax for DATABASE '{{ config.database.database }}'
+CREATE DATABASE IF NOT EXISTS `{{ config.database.database }}` DEFAULT CHARACTER SET = `{{ config.database.charset }}`;
+USE `{{ config.database.database }}`;

@@ -9,6 +9,7 @@ use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Filter\Assets;
 use ricwein\shurl\Template\Filter\Bindings;
 use ricwein\shurl\Template\Filter\Comments;
+use ricwein\shurl\Template\Filter\Implode;
 use ricwein\shurl\Template\Filter\Includes;
 
 /**
@@ -135,6 +136,7 @@ class Template {
 		// run parsers
 		$content = (new Includes($this->template))->replace($content);
 		$content = (new Comments())->replace($content);
+		$content = (new Implode())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
 		$content = (new Bindings())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
 		$content = (new Assets($this->asset, $this->config))->replace($content, array_merge($bindings, (array) $this->config->assets['variables']));
 

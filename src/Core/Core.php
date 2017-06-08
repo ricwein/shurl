@@ -12,6 +12,8 @@ use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Exception\NotFound;
+use ricwein\shurl\Redirect\Rewrite;
+use ricwein\shurl\Redirect\URL;
 use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Filter\Assets;
 use ricwein\shurl\Template\Template;
@@ -97,8 +99,8 @@ class Core {
 
 		switch ($url->mode()) {
 			case 'html':$this->viewTemplate('redirect', ['url' => $url]);
-			case 'passthrough':(new Redirect())->passthrough($this->config, $url, $response, ($this->config->cache['passthrough'] ? $this->cache : null));
-			default:(new Redirect())->rewrite($this->config, $url, $response, $this->config->redirect['permanent'] && !$this->config->development);
+			case 'passthrough':(new Rewrite($this->config, $url, $response))->passthrough($this->config->cache['passthrough'] ? $this->cache : null);
+			default:(new Rewrite($this->config, $url, $response))->rewrite($this->config->redirect['permanent'] && !$this->config->development);
 		}
 	}
 
@@ -221,7 +223,7 @@ class Core {
 	 * @param  string|null $slug
 	 * @param  string|null $starts
 	 * @param  string|null $expires
-	 * @param  string $redirectMode URL::MODES
+	 * @param  string $redirectMode Rewrite::MODES
 	 * @return URL
 	 * @throws \UnexpectedValueException
 	 */
@@ -230,7 +232,7 @@ class Core {
 		$url          = trim($url);
 		$redirectMode = strtolower(trim($redirectMode));
 
-		if (!in_array($redirectMode, URL::MODES)) {
+		if (!in_array($redirectMode, Rewrite::MODES)) {
 			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode', $redirectMode));
 		}
 
@@ -385,7 +387,7 @@ class Core {
 		}
 
 		$visit = [
-			'redirect_id' => $url->getRedirectID(),
+			'redirect_id' => $url->id,
 			'visited'     => date($this->config->timestampFormat['database']),
 			'origin'      => $this->getBaseURL($request),
 		];

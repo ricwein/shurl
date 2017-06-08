@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\Core;
+namespace ricwein\shurl\Redirect;
 
 use ricwein\shurl\Config\Config;
 
@@ -8,11 +8,6 @@ use ricwein\shurl\Config\Config;
  * represents a shurl URL object
  */
 class URL {
-
-	/**
-	 * @var string[]
-	 */
-	const MODES = ['redirect', 'html', 'passthrough'];
 
 	/**
 	 * redirect ID
@@ -56,7 +51,7 @@ class URL {
 	 */
 	public function __construct(int $id, string $slug, string $original, string $mode, Config $config, array $additionals = []) {
 		$mode = strtolower(trim($mode));
-		if (!in_array($mode, static::MODES)) {
+		if (!in_array($mode, Rewrite::MODES)) {
 			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode', $mode));
 		}
 

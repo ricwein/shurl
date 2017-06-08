@@ -3,7 +3,8 @@
 namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Core\Core;
-use ricwein\shurl\Core\URL;
+use ricwein\shurl\Redirect\Rewrite;
+use ricwein\shurl\Redirect\URL;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +28,7 @@ class Add extends Command {
 			new InputOption('slug', 's', InputOption::VALUE_OPTIONAL, 'Use a specific slug for URL-Shortening'),
 			new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL'),
 			new InputOption('starts', 'f', InputOption::VALUE_OPTIONAL, 'set start date for this URL'),
-			new InputOption('as', null, InputOption::VALUE_REQUIRED, 'choose redirect mode <comment>[available: "' . implode('", "', URL::MODES) . '"]</comment>', 'redirect'),
+			new InputOption('as', null, InputOption::VALUE_REQUIRED, 'choose redirect mode <comment>[available: "' . implode('", "', Rewrite::MODES) . '"]</comment>', 'redirect'),
 		]);
 	}
 
@@ -39,8 +40,8 @@ class Add extends Command {
 		$helper = $this->getHelper('question');
 
 		$mode = $input->getOption('as');
-		if (!in_array($mode, URL::MODES)) {
-			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode, please use one of the following: ' . implode(', ', URL::MODES), $mode));
+		if (!in_array($mode, Rewrite::MODES)) {
+			throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode, please use one of the following: ' . implode(', ', Rewrite::MODES), $mode));
 		}
 
 		// fetch url

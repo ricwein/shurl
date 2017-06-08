@@ -4,6 +4,7 @@ namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Core;
+use ricwein\shurl\Redirect\Rewrite;
 use ricwein\shurl\Template\Template;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -24,6 +25,7 @@ class Init extends Command {
 		$this->setDefinition([
 			new InputOption('force', 'f', InputOption::VALUE_NONE, 'fore init, override existing tables!'),
 			new InputOption('dropforce', 'd', InputOption::VALUE_NONE, 'force init database, drops database first!'),
+			new InputOption('output', 'o', InputOption::VALUE_NONE, 'print resulting SQL Queries, instead of executing them'),
 		]);
 	}
 
@@ -47,13 +49,22 @@ class Init extends Command {
 		$pixie = (new Core($config))->getDB();
 
 		// parse sql query files
-		$queries = '';
+		$queries  = '';
+		$bindings = [
+			'config'       => $config,
+			'rewriteModes' => Rewrite::MODES,
+		];
 		if ($input->getOption('dropforce')) {
-			$queries .= (new Template('drop.database', $config))->make($config->database);
+			$queries .= (new Template('drop.database', $config))->make($bindings);
 		} elseif ($input->getOption('force')) {
-			$queries .= (new Template('drop.tables', $config))->make($config->database);
+			$queries .= (new Template('drop.tables', $config))->make($bindings);
 		}
-		$queries .= (new Template('create', $config))->make($config->database);
+		$queries .= (new Template('create', $config))->make($bindings);
+
+		if ($input->getOption('output')) {
+			$output->writeln($queries);
+			exit(0);
+		}
 
 		// preprocess queries
 		$queries = preg_replace(['/(--.*)/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/'], '', $queries);
