@@ -29,6 +29,9 @@ class Assets extends Functions {
 	}
 
 	/**
+	 * replace scss assets with either inline css or link
+	 *
+	 * [asset 'name.scss' [| inline|link]]
 	 * @param string $content
 	 * @param array $bindings
 	 * @return string
@@ -36,11 +39,20 @@ class Assets extends Functions {
 	protected function replace(string $content, array $bindings = []): string{
 
 		// include other template files
-		$content = preg_replace_callback($this->getRegex('asset(.*)'), function (array $match) use ($bindings): string {
+		$content = preg_replace_callback($this->getRegex('asset(.*)(\|.*)?'), function (array $match) use ($bindings): string {
 
-			$filename = trim($match[1], '\'" ');
+			$filename = trim($match[1]);
 
-			if ($this->config->assets['inline']) {
+			if (false !== $pos = strpos($filename, '|')) {
+				$method   = trim(substr($filename, $pos + 1, strlen($filename)));
+				$inline   = ($method === 'inline' ? true : ($method === 'link' ? false : $this->config->assets['inline']));
+				$filename = trim((substr($filename, 0, $pos)), '\'" ');
+			} else {
+				$filename = trim($filename, '\'" ');
+				$inline   = $this->config->assets['inline'];
+			}
+
+			if ($inline) {
 				$filecontent = $this->parse($filename, $bindings);
 				$filecontent = '<style>' . trim($filecontent) . '</style>';
 				return $filecontent;
@@ -65,6 +77,10 @@ class Assets extends Functions {
 		 * @var Compiler
 		 */
 		static $compiler;
+
+		$bindings = array_filter($bindings, function ($entry): bool {
+			return is_scalar($entry) || (is_object($entry) && method_exists($entry, '__toString'));
+		});
 
 		if ($compiler === null) {
 			$compiler = new Compiler();

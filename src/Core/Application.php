@@ -41,12 +41,9 @@ class Application {
 
 		$klein = new Klein();
 
-		// match and redirect slugs
-		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response) {
-			$url = $this->core->getUrl($request->slug);
-
-			$this->core->track($url, $request);
-			$this->core->redirect($url, $response);
+		// show welcome page as default
+		$klein->respond('/', function (Request $request) {
+			$this->core->viewWelcome();
 		});
 
 		// match and preview slugs
@@ -72,14 +69,17 @@ class Application {
 			exit(0);
 		});
 
+		// match and redirect slugs
+		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response) {
+			$url = $this->core->getUrl($request->slug);
+
+			$this->core->track($url, $request);
+			$this->core->redirect($url, $response);
+		});
+
 		// match scss assets, and parse them
 		$klein->respond('GET', '/assets/css/[:stylesheet].css', function (Request $request, Response $response) {
 			$this->core->viewAsset($request->stylesheet, $response);
-		});
-
-		// show welcome page as default
-		$klein->respond('/', function (Request $request) {
-			$this->core->viewWelcome();
 		});
 
 		// run dispatcher and handle thrown exceptions

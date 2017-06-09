@@ -346,7 +346,7 @@ class Core {
 
 		// slug not found
 		if (!$url) {
-			throw new NotFound('Unknown Slug, URL not found', 404);
+			throw new NotFound(sprintf('Unknown Slug \'%s\', URL not found', $slug), 404);
 		}
 
 		return new URL($url->id, $url->slug, $url->url, $url->mode, $this->config);

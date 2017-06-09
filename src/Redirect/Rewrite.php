@@ -4,6 +4,7 @@ namespace ricwein\shurl\Redirect;
 
 use Klein\Response;
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Core\Cache;
 
 /**
  * provides HTTP Networking methods
@@ -52,12 +53,12 @@ class Rewrite {
 
 		if ($permanent) {
 
-			http_response_code(301);
+			$this->response->status()->setCode(301);
 			$this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
 
 		} else {
 
-			http_response_code(302);
+			$this->response->status()->setCode(302);
 			$this->response->header('Pragma', 'no-cache');
 			$this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
 			$this->response->header('Expires', '0');
