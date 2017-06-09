@@ -79,7 +79,7 @@ class Template {
 	 * @param callable|null $filter
 	 * @return void
 	 */
-	public function render($bindings = null, callable $filter = null) {
+	public function render($bindings = [], callable $filter = null) {
 
 		$content = $this->make($bindings, $filter);
 
@@ -92,10 +92,18 @@ class Template {
 	 * @param callable|null $filter
 	 * @return string
 	 */
-	public function make($bindings = null, callable $filter = null): string {
+	public function make($bindings = [], callable $filter = null): string{
+
+		$bindings = array_merge((array) $bindings, [
+			'template' => ['name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->config->views['extension'], '', $this->templateFile), PATHINFO_FILENAME))))],
+			'config'   => $this->config,
+			'name'     => ucfirst(strtolower($this->config->name)),
+		]);
 
 		if ($this->cache === null) {
-			return $this->_compile($bindings, $filter);
+			$content = $this->_load($filter);
+			$content = $this->_populate($content, $bindings);
+			return $content;
 		}
 
 		$templateCache = $this->cache->getItem(
@@ -107,28 +115,22 @@ class Template {
 		if (null === $content = $templateCache->get()) {
 
 			// load template from file
-			$content = $this->_compile($bindings, $filter);
+			$content = $this->_load($filter);
 
 			$templateCache->set($content);
 			$templateCache->expiresAfter($this->config->cache['duration']);
 			$this->cache->save($templateCache);
 		}
 
+		$content = $this->_populate($content, $bindings);
 		return $content;
 	}
 
 	/**
-	 * @param array|object $bindings
 	 * @param callable|null $filter
 	 * @return string
 	 */
-	protected function _compile($bindings = null, callable $filter = null): string{
-
-		$bindings = array_merge((array) $bindings, [
-			'template' => ['name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->config->views['extension'], '', $this->templateFile), PATHINFO_FILENAME))))],
-			'config'   => $this->config,
-			'name'     => ucfirst(strtolower($this->config->name)),
-		]);
+	protected function _load(callable $filter = null): string{
 
 		// load template from file
 		$content = $this->template->read($this->templateFile);
@@ -136,15 +138,24 @@ class Template {
 		// run parsers
 		$content = (new Includes($this->template))->replace($content);
 		$content = (new Comments())->replace($content);
-		$content = (new Implode())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
-		$content = (new Bindings())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
-		$content = (new Assets($this->asset, $this->config))->replace($content, array_merge($bindings, (array) $this->config->assets['variables']));
 
 		// run user-defined filters above content
 		if ($filter !== null) {
 			$content = call_user_func_array($filter, [$content, $this]);
 		}
 
+		return $content;
+	}
+
+	/**
+	 * @param string $content
+	 * @param array $bindings
+	 * @return string
+	 */
+	protected function _populate(string $content, array $bindings): string{
+		$content = (new Implode())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
+		$content = (new Assets($this->asset, $this->config))->replace($content, array_merge($bindings, (array) $this->config->assets['variables']));
+		$content = (new Bindings())->replace($content, array_merge($bindings, (array) $this->config->views['variables']));
 		return $content;
 	}
 
