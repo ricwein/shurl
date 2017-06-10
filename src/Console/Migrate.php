@@ -49,13 +49,19 @@ class Migrate extends Command {
 		// init db-connection
 		$pixie = (new Core($config))->getDB();
 
-		// fetch version history from DB
-		$query = $pixie->table('version');
-		$query->where('type', 'last')->orWhere('type', 'current');
-		$query->select(['type', 'version']);
+		if (!$input->getOption('to') || !$input->getOption('from')) {
+
+			// fetch version history from DB
+			$query = $pixie->table('version');
+			$query->where('type', 'last')->orWhere('type', 'current');
+			$query->select(['type', 'version']);
+			$versions = array_column($query->get(), 'version', 'type');
+
+		} else {
+			$versions = [];
+		}
 
 		// preprocess versions
-		$versions        = array_column($query->get(), 'version', 'type');
 		$versions['org'] = (float) $this->getApplication()->getVersion();
 
 		if (null !== $to = $input->getOption('to')) {
@@ -131,7 +137,7 @@ class Migrate extends Command {
 			return !empty($query);
 		});
 
-		$progress = new ProgressBar($output, count($queries));
+		$progress = new ProgressBar($output, count($queries) + 2);
 
 		// execute queries
 		foreach ($queries as $query) {
@@ -139,7 +145,12 @@ class Migrate extends Command {
 			$progress->advance();
 		}
 
+		$pixie->table('version')->where('type', 'last')->update(['version' => $versions['current']]);
+		$progress->advance();
+		$pixie->table('version')->where('type', 'current')->update(['version' => $versions['to']]);
+		$progress->advance();
+
 		$progress->finish();
-		$output->writeln(PHP_EOL . '<info>done</info>');
+		$output->writeln(PHP_EOL . 'migration done: <info>updated to ' . $versions['to'] . '</info>');
 	}
 }

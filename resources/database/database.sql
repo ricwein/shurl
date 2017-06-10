@@ -1,4 +1,6 @@
-CREATE DATABASE IF NOT EXISTS `shurl`
+-- Create syntax for DATABASE 'shurl'
+CREATE DATABASE IF NOT EXISTS `shurl` DEFAULT CHARACTER SET = `utf8mb4`;
+USE `shurl`;
 
 -- Create syntax for TABLE 'redirects'
 CREATE TABLE IF NOT EXISTS `redirects` (
@@ -10,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `redirects` (
   `valid_to` timestamp NULL DEFAULT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   `public` tinyint(1) NOT NULL DEFAULT '0',
-  `mode` enum('redirect','html','passthrough') NOT NULL DEFAULT 'redirect',
+  `mode` enum('redirect', 'html', 'passthrough') NOT NULL DEFAULT 'redirect',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug_unique` (`slug`),
   KEY `temp` (`created`),
@@ -37,4 +39,11 @@ CREATE TABLE IF NOT EXISTS `visits` (
   `referrer` text,
   PRIMARY KEY (`id`),
   KEY `url` (`redirect_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create syntax for TABLE 'version'
+CREATE TABLE IF NOT EXISTS `version` (
+  `type` enum('last','current') NOT NULL DEFAULT 'current',
+  `version` decimal(4,1) DEFAULT NULL,
+  PRIMARY KEY (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

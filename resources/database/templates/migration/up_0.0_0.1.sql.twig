@@ -1,2 +1,7 @@
 -- create new version table
 {% include 'table/create.version' %}
+
+INSERT INTO `{{ config.database.prefix }}version` (`type`, `version`)
+VALUES
+	('last', 0.0),
+	('current', 0.1);

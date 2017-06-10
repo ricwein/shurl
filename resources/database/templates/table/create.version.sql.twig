@@ -1,6 +1,6 @@
 -- Create syntax for TABLE 'version'
-CREATE TABLE `{{ config.database.prefix }}version` (
+CREATE TABLE IF NOT EXISTS `{{ config.database.prefix }}version` (
   `type` enum('last','current') NOT NULL DEFAULT 'current',
-  `version` decimal(5,2) DEFAULT NULL,
+  `version` decimal(4,1) DEFAULT NULL,
   PRIMARY KEY (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET={{ config.database.charset }};
