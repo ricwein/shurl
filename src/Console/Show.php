@@ -18,7 +18,7 @@ class Show extends Command {
 	protected function configure() {
 
 		$this->setName('url:show');
-		$this->setDescription('generate and show stats.');
+		$this->setDescription('generate and show stats');
 		$this->setHelp('This command generates usage-statistics about all known entries.');
 
 		$this->setDefinition([

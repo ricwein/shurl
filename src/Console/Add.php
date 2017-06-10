@@ -4,7 +4,6 @@ namespace ricwein\shurl\Console;
 
 use ricwein\shurl\Core\Core;
 use ricwein\shurl\Redirect\Rewrite;
-use ricwein\shurl\Redirect\URL;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +19,7 @@ class Add extends Command {
 	protected function configure() {
 
 		$this->setName('url:add');
-		$this->setDescription('adds new entry.');
+		$this->setDescription('adds new entry');
 		$this->setHelp('This command adds a new URL to the shurl Database.');
 
 		$this->setDefinition([

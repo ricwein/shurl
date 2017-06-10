@@ -6,11 +6,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use ricwein\shurl\Console;
 use Symfony\Component\Console\Application;
 
-$application = new Application();
+$application = new Application('shurl console', file_get_contents(__DIR__ . '/../VERSION'));
 
 $application->add(new Console\Add());
 $application->add(new Console\Remove());
 $application->add(new Console\Show());
 $application->add(new Console\Init());
+$application->add(new Console\Migrate());
 
 $application->run();

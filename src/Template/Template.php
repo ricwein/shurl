@@ -18,16 +18,6 @@ use ricwein\shurl\Template\Filter\Includes;
 class Template {
 
 	/**
-	 * @var string[]
-	 */
-	const REGEX_VARIABLES = ['/\{\{\s*', '\s*\}\}/'];
-
-	/**
-	 * @var string[]
-	 */
-	const REGEX_METHODS = ['/\{%\s*', '\s*%\}/'];
-
-	/**
 	 * @var string
 	 */
 	protected $templateFile;

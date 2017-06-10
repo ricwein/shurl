@@ -19,7 +19,7 @@ class Init extends Command {
 
 	protected function configure() {
 		$this->setName('init');
-		$this->setDescription('init new shurl instance.');
+		$this->setDescription('init new shurl instance');
 		$this->setHelp('This command bootstraps the shurl database-structure.');
 
 		$this->setDefinition([

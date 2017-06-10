@@ -20,7 +20,7 @@ class Remove extends Command {
 	protected function configure() {
 
 		$this->setName('url:remove');
-		$this->setDescription('disables entry.');
+		$this->setDescription('disables entry');
 		$this->setHelp('This command allows to disable a selected URL.');
 
 		$this->setDefinition([
