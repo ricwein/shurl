@@ -15,6 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Show extends Command {
 
+	/**
+	 * @var array
+	 */
+	const DISTINCT_COL = ['user_agent', 'ip', 'referrer'];
+
 	protected function configure() {
 
 		$this->setName('url:show');
@@ -26,6 +31,7 @@ class Show extends Command {
 			new InputOption('all', 'a', InputOption::VALUE_NONE, 'also show disabled entries, default is only enabled'),
 			new InputOption('shortenedURL', 'u', InputOption::VALUE_NONE, 'adds full shortened URL to output'),
 			new InputOption('filter', 'f', InputOption::VALUE_OPTIONAL, 'Search for Slug or URL'),
+			new InputOption('distinct', null, InputOption::VALUE_OPTIONAL, 'distinct users, DNT visits always count as unique! <comment>["' . implode('", "', static::DISTINCT_COL) . '"]</comment>'),
 		]);
 
 	}
@@ -42,7 +48,15 @@ class Show extends Command {
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 		$query->join('visits', 'redirects.id', '=', 'visits.redirect_id', 'LEFT');
 
-		$query->select(['redirects.*', 'urls.url', $query->raw('COUNT(' . Config::getInstance()->database['prefix'] . 'visits.id) as hits')]);
+		// aggregate visitors
+		if (null === $distinct = $input->getOption('distinct')) {
+			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(%svisits.id) as hits', Config::getInstance()->database['prefix']))]);
+		} elseif (!in_array($distinct, static::DISTINCT_COL)) {
+			throw new \UnexpectedValueException(sprintf('"%s" is not a valid distinction column mode, please use one of the following: ' . implode(', ', static::DISTINCT_COL), $distinct));
+		} else {
+			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(DISTINCT %svisits.%s) + SUM(CASE WHEN %svisits.%s IS NULL THEN 1 ELSE 0 END) as hits', Config::getInstance()->database['prefix'], $distinct, Config::getInstance()->database['prefix'], $distinct))]);
+		}
+
 		$query->groupBy('redirects.id');
 		$query->orderBy(['hits', 'redirects.id'], 'DESC');
 
