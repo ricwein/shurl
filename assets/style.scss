@@ -56,7 +56,7 @@ p {
   padding: 0 20px;
 
   &:first-of-type {
-    border-top: 1px solid darken($background-color, 5%);
+    border-top: 1px solid rgba(invert($background-color), .1);
     padding-top: 5px;
   }
 

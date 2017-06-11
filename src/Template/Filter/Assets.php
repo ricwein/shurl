@@ -81,9 +81,9 @@ class Assets extends Functions {
 		 */
 		static $compiler;
 
-		$bindings = array_filter($bindings, function ($entry): bool {
+		$bindings = array_merge($this->config->assets['variables'], (array) array_filter($bindings, function ($entry): bool {
 			return is_scalar($entry) || (is_object($entry) && method_exists($entry, '__toString'));
-		});
+		}));
 
 		if ($compiler === null) {
 			$compiler = new Compiler();
