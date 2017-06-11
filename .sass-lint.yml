@@ -1,2 +1,6 @@
 files:
   include: 'assets/style/**/*.scss'
+
+rules:
+  indentation:
+      size: 'tab'

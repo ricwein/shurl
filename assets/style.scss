@@ -1,70 +1,70 @@
 @import 'colors';
+@import 'size';
 
 body {
-  background-color: $background-color;
-  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  padding-top: 30vh;
+	background-color: $color-background;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	min-height: 100%;
+	padding-top: floor($page-height / 4);
 }
 
 .container {
-  background-color: $background-color;
-  color: $accent-color;
-  margin: 0 auto;
-  max-width: 100%;
-  min-width: 30%;
-  width: 600px;
-
-  &.header {
-    margin-top: -15vh;
-  }
+	background-color: $color-background;
+	color: $color-foreground;
+	margin: 0 auto;
+	max-width: 100%;
+	min-width: 30%;
+	width: $page-width;
 }
 
 .center {
-  display: block;
-  text-align: center;
+	display: block;
+	text-align: center;
+}
+
+.accent {
+	color: $color-accent;
 }
 
 img {
-  &.icon {
-    background-color: $primary-color;
-    border-radius: 50%;
-    box-shadow: 0 0 50px transparentize($primary-color, 20%);
-    display: block;
-    margin: auto auto 5vh;
-  }
+	&.icon {
+		background-color: $color-accent;
+		border-radius: 50%;
+		box-shadow: 0 0 floor($page-width / 12) transparentize($color-accent, 20%);
+		display: block;
+		height: $icon-size;
+		margin: floor(-$icon-size / 2) auto floor($page-height / 20);
+		width: $icon-size;
+	}
 }
 
 a {
-  color: $accent-color;
-  font-weight: bold;
-  text-decoration: none;
+	color: $color-foreground;
+	font-weight: bold;
+	text-decoration: none;
 }
 
 b {
-  color: darken($accent-color, 20%);
+	color: darken($color-foreground, 20%);
 }
 
 h1 {
-  padding: 20px 20px 5px;
+	padding: $padding-size $padding-size floor($padding-size / 4);
 }
 
 p {
-  color: lighten($accent-color, 20%);
-  font-weight: 300;
-  letter-spacing: 1px;
-  line-height: 200%;
-  padding: 0 20px;
+	color: lighten($color-foreground, 20%);
+	font-weight: 300;
+	letter-spacing: 1px;
+	line-height: 200%;
+	padding: 0 $padding-size;
 
-  &:first-of-type {
-    border-top: 1px solid rgba(invert($background-color), .1);
-    padding-top: 5px;
-  }
+	&:first-of-type {
+		border-top: 1px solid rgba(invert($color-background), .05);
+		padding-top: floor($padding-size / 4);
+	}
 
-  &:last-of-type {
-    padding-bottom: 20px;
-  }
-
-  a {
-    color: $primary-color;
-  }
+	a {
+		color: $color-accent;
+	}
 }
