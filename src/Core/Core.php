@@ -168,7 +168,7 @@ class Core {
 
 		$response->body($styles);
 		$response->header('Content-Type', 'text/css; charset=utf-8');
-		$response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+		$response->header('Cache-Control', 'max-age=' . $this->config->assets['expires']);
 		$response->send();
 	}
 

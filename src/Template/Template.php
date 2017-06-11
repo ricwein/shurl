@@ -108,7 +108,7 @@ class Template {
 			$content = $this->_load($filter);
 
 			$templateCache->set($content);
-			$templateCache->expiresAfter($this->config->cache['duration']);
+			$templateCache->expiresAfter($this->config->views['expires']);
 			$this->cache->save($templateCache);
 		}
 

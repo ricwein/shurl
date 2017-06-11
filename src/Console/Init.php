@@ -53,6 +53,7 @@ class Init extends Command {
 		$bindings = [
 			'config'       => $config,
 			'rewriteModes' => Rewrite::MODES,
+			'version'      => ['current' => number_format((float) $this->getApplication()->getVersion(), 1, '.', '')],
 		];
 		if ($input->getOption('dropforce')) {
 			$queries .= (new Template('drop.database', $config))->make($bindings);

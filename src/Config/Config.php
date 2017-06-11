@@ -106,12 +106,14 @@ class Config {
 				'redirect' => 'pages/redirect',
 				'preview'  => 'pages/preview',
 			],
+			'expires'     => 604800, // 1w
 		],
 
 		'assets'          => [
 			'path'      => 'assets/',
 			'variables' => [],
 			'inline'    => false,
+			'expires'   => 604800, // 1w
 		],
 	];
 

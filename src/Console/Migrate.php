@@ -101,6 +101,7 @@ class Migrate extends Command {
 		$bindings = [
 			'config'       => $config,
 			'rewriteModes' => Rewrite::MODES,
+			'version'      => ['current' => $versions['to']],
 		];
 
 		$prevVersion = $versions['current'];

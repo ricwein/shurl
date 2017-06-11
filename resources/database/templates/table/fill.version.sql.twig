@@ -1,0 +1,4 @@
+INSERT INTO `{{ config.database.prefix }}version` (`type`, `version`)
+VALUES
+	('last', 0.0),
+	('current', {{ version.current }});
