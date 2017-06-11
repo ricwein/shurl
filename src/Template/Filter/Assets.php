@@ -58,12 +58,11 @@ class Assets extends Functions {
 				return $filecontent;
 			}
 
-			$filename = pathinfo($filename, PATHINFO_FILENAME) . '.css';
-			return implode(PHP_EOL, [
-				'<link crossorigin="anonymous" rel="preload" href="/assets/css/' . $filename . '" as="style" onload="this.rel=\'stylesheet\'" />',
-				'<noscript><link rel="stylesheet" href="/assets/css/' . $filename . '"></noscript>',
-			]);
-			return;
+			$fileurl = '/assets/css/' . pathinfo($filename, PATHINFO_FILENAME) . '.css';
+
+			return
+				'<link crossorigin="anonymous" rel="preload" href="' . $fileurl . '" as="style" onload="this.rel=\'stylesheet\'" />' .
+				'<noscript><link rel="stylesheet" media="all" href="' . $fileurl . '"></noscript>';
 
 		}, $content);
 
