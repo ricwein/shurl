@@ -5,11 +5,9 @@
 		<link rel="canonical" href="{{ url.getOriginal }}"/>
 	</head>
 	<body>
-		<div class="container header">
-			<h2 class="center">{{ url.slug }}</h2>
-			<span class="center">
-				<p>resolves to: <a href="{{ url.getOriginal }}" rel="noreferrer nofollow">{{ url.getOriginal }}</a></p>
-			</span>
+		<div class="container">
+			<h1><i class="accent">{{ url.slug }}</i> <small>resolves to:</small></h1>
+			<p><a href="{{ url.getOriginal }}" rel="noreferrer nofollow">{{ url.getOriginal }}</a></p>
 		</div>
 	</body>
 </html>

@@ -29,6 +29,7 @@ body {
 img {
 	&.icon {
 		background-color: $color-accent;
+		border: 5px solid mix($color-accent, invert($color-background), 75%);
 		border-radius: 50%;
 		box-shadow: 0 0 floor($page-width / 12) transparentize($color-accent, 20%);
 		display: block;
@@ -39,8 +40,9 @@ img {
 }
 
 a {
-	color: $color-foreground;
-	font-weight: bold;
+	border-bottom: 1px solid $color-accent;
+	color: darken($color-foreground, 20%);
+	font-weight: bolder;
 	text-decoration: none;
 }
 
@@ -60,11 +62,7 @@ p {
 	padding: 0 $padding-size;
 
 	&:first-of-type {
-		border-top: 1px solid rgba(invert($color-background), .05);
+		border-top: 1px solid rgba(invert($color-background), .05%);
 		padding-top: floor($padding-size / 4);
-	}
-
-	a {
-		color: $color-accent;
 	}
 }

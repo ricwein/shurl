@@ -61,8 +61,8 @@ class Assets extends Functions {
 			$fileurl = '/assets/css/' . pathinfo($filename, PATHINFO_FILENAME) . '.css';
 
 			return
-				'<link rel="stylesheet" media="none" href="' . $fileurl . '" onload="media=\'all\'" />' .
-				'<noscript><link rel="stylesheet" media="all" href="' . $fileurl . '" /></noscript>';
+				'<link href="' . $fileurl . '" rel="stylesheet" media="none" onload="media=\'all\'" />' .
+				'<noscript><link href="' . $fileurl . '" rel="stylesheet" media="all" /></noscript>';
 
 		}, $content);
 
