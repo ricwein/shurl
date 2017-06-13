@@ -6,12 +6,7 @@ use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Cache;
 use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
-use ricwein\shurl\Template\Processor\Assets;
-use ricwein\shurl\Template\Processor\Bindings;
-use ricwein\shurl\Template\Processor\Comments;
-use ricwein\shurl\Template\Processor\Implode;
-use ricwein\shurl\Template\Processor\Includes;
-use ricwein\shurl\Template\Processor\Minify;
+use ricwein\shurl\Template\Processor;
 
 /**
  * simple Template parser with Twig-like syntax
@@ -106,8 +101,8 @@ class Template {
 		$content = $this->template->read($templateFile);
 
 		// run parsers
-		$content = (new Includes($this->template))->replace($content);
-		$content = (new Comments())->replace($content, !$this->config->views['removeComments']);
+		$content = (new Processor\Includes($this->template))->replace($content);
+		$content = (new Processor\Comments())->replace($content, !$this->config->views['removeComments']);
 
 		// run user-defined filters above content
 		if ($filter !== null) {
@@ -123,10 +118,10 @@ class Template {
 	 * @return string
 	 */
 	protected function _populate(string $content, array $bindings): string{
-		$content = (new Implode())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
-		$content = (new Assets($this->asset, $this->config))->replace($content, array_replace_recursive($bindings, (array) $this->config->assets['variables']));
-		$content = (new Bindings())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
-		$content = (new Minify($this->config))->replace($content);
+		$content = (new Processor\Implode())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
+		$content = (new Processor\Assets($this->asset, $this->config))->replace($content, array_replace_recursive($bindings, (array) $this->config->assets['variables']));
+		$content = (new Processor\Bindings())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
+		$content = (new Processor\Minify($this->config))->replace($content);
 		return $content;
 	}
 

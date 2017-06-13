@@ -6,7 +6,7 @@ use Klein\Request;
 use Klein\Response;
 use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
-use ricwein\shurl\Template\Processor\Assets;
+use ricwein\shurl\Template\Processor;
 use ricwein\shurl\Template\Template;
 
 /**
@@ -64,18 +64,21 @@ class Templater {
 	}
 
 	/**
+	 * fetch and build some default Variables
+	 * for template-binding
 	 * @return array
 	 */
 	protected function fetchVariables(): array{
 		$protocol = ($this->request->isSecure() ? 'https://' : 'http://');
 		$host     = ($this->request->server()->get('SERVER_NAME') ? $this->request->server()->get('SERVER_NAME') : $this->request->headers()->get('Host'));
 
-		return [
+		return array_replace_recursive([
 			'wait'   => (int) $this->core->config->redirect['wait'],
-			'url'    => ['base' => $protocol . $host, 'protocol' => $protocol, 'host' => $host],
-			'config' => $this->core->config,
-			'name'   => ucfirst(strtolower($this->core->config->name)),
-		];
+			'url'    => ['base' => $protocol . $host, 'protocol' => $protocol, 'host' => $host, 'root' => $this->core->config->rootURL],
+			'config' => $this->core->config->get(),
+		], [
+			'config' => ['name' => ucfirst(strtolower($this->core->config->name))],
+		]);
 	}
 
 	/**
@@ -85,7 +88,7 @@ class Templater {
 	public function error(\Throwable $throwable) {
 
 		// set http response code from exception
-		http_response_code($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
+		$this->response->status()->setCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
 
 		$this->view('error', ['exception' => [
 			'type'    => (new \ReflectionClass($throwable))->getShortName(),
@@ -103,7 +106,7 @@ class Templater {
 			throw new NotFound('assets path not found', 404);
 		}
 		$asset  = new File($assetPath, $this->core->config);
-		$parser = new Assets($asset, $this->core->config);
+		$parser = new Processor\Assets($asset, $this->core->config);
 		$styles = $parser->parse($assetName . '.scss', $this->fetchVariables());
 
 		$this->response->body($styles);
