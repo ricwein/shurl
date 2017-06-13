@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\Template\Filter;
+namespace ricwein\shurl\Template\Processor;
 
 use Leafo\ScssPhp\Compiler;
 use Leafo\ScssPhp\Formatter\Compressed;
@@ -58,7 +58,7 @@ class Assets extends Functions {
 				return $filecontent;
 			}
 
-			$fileurl = '/assets/css/' . pathinfo($filename, PATHINFO_FILENAME) . '.css';
+			$fileurl = $bindings['url']['base'] . '/assets/css/' . pathinfo($filename, PATHINFO_FILENAME) . '.css';
 
 			return
 				'<link href="' . $fileurl . '" rel="stylesheet" media="none" onload="media=\'all\'" />' .
@@ -81,13 +81,15 @@ class Assets extends Functions {
 		 */
 		static $compiler;
 
-		$bindings = array_merge($this->config->assets['variables'], (array) array_filter($bindings, function ($entry): bool {
+		$bindings = array_replace_recursive($this->config->assets['variables'], (array) array_filter($bindings, function ($entry): bool {
 			return is_scalar($entry) || (is_object($entry) && method_exists($entry, '__toString'));
 		}));
 
 		if ($compiler === null) {
+
 			$compiler = new Compiler();
 			$compiler->setImportPaths($this->_file->getBasepath());
+
 			if ($this->config->development) {
 				$compiler->setFormatter(new Expanded());
 			} else {

@@ -47,7 +47,7 @@ class Migrate extends Command {
 		]);
 
 		// init db-connection
-		$pixie = (new Core($config))->getDB();
+		$pixie = (new Core($config))->db;
 
 		if (!$input->getOption('to') || !$input->getOption('from')) {
 
@@ -84,7 +84,7 @@ class Migrate extends Command {
 		} elseif ($versions['to'] === null) {
 			throw new \UnexpectedValueException('invalid version number: to');
 		} elseif ($versions['current'] === null) {
-			throw new \UnexpectedValueException('invalid version number: current');
+			throw new \UnexpectedValueException('inv®alid version number: current');
 		} elseif ($input->getOption('rollback') && $versions['to'] >= $versions['current']) {
 			throw new \UnexpectedValueException('invalid versions for rollback');
 		} elseif (!$input->getOption('rollback') && $versions['to'] <= $versions['current']) {
@@ -92,7 +92,7 @@ class Migrate extends Command {
 		}
 
 		$question = new ConfirmationQuestion(($input->getOption('rollback') ? 'Rollback' : 'Migrating') . ' from <comment>' . number_format((float) $versions['current'], 1, '.', '') . '</comment> to <comment>' . number_format((float) $versions['to'], 1, '.', '') . '</comment>, continue?' . PHP_EOL . '[Y/n]: ', true, '/^(y|j)/i');
-		if (!$input->getOption('confirm') && !$helper->ask($input, $output, $question)) {
+		if (!$input->getOption('confirm') && !$input->getOption('output') && !$helper->ask($input, $output, $question)) {
 			return;
 		}
 
@@ -105,10 +105,11 @@ class Migrate extends Command {
 		];
 
 		$prevVersion = $versions['current'];
+		$template    = new Template($config);
 		if ($input->getOption('rollback')) {
 			for ($version = $versions['current']; $version >= $versions['to']; $version -= 0.1) {
 				try {
-					$queries .= (new Template(sprintf('migration/down_%s_%s', number_format((float) $prevVersion, 1, '.', ''), number_format((float) $version, 1, '.', '')), $config))->make($bindings);
+					$queries .= $template->make(sprintf('migration/down_%s_%s', number_format((float) $prevVersion, 1, '.', ''), number_format((float) $version, 1, '.', '')), $bindings);
 					$prevVersion = $version;
 				} catch (\Exception $e) {
 					continue;
@@ -117,7 +118,7 @@ class Migrate extends Command {
 		} else {
 			for ($version = $versions['current']; $version <= $versions['to']; $version += 0.1) {
 				try {
-					$queries .= (new Template(sprintf('migration/up_%s_%s', number_format((float) $prevVersion, 1, '.', ''), number_format((float) $version, 1, '.', '')), $config))->make($bindings);
+					$queries .= $template->make(sprintf('migration/up_%s_%s', number_format((float) $prevVersion, 1, '.', ''), number_format((float) $version, 1, '.', '')), $bindings);
 					$prevVersion = $version;
 				} catch (\Exception $e) {
 					continue;

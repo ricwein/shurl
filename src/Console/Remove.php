@@ -46,7 +46,7 @@ class Remove extends Command {
 		}
 
 		$config = Config::getInstance();
-		$pixie  = (new Core($config))->getDB();
+		$pixie  = (new Core($config))->db;
 
 		$query = $pixie->table('redirects');
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');

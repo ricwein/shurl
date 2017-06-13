@@ -2,9 +2,11 @@
 
 namespace ricwein\shurl\Core;
 
+use Klein\App;
 use Klein\Klein;
 use Klein\Request;
 use Klein\Response;
+use Klein\ServiceProvider;
 use ricwein\shurl\Config\Config;
 
 /**
@@ -14,21 +16,19 @@ use ricwein\shurl\Config\Config;
 class Application {
 
 	/**
-	 * @var Core
+	 * @var Config
 	 */
-	protected $core;
+	protected $config;
 
 	/**
 	 * init new shurl Core
-	 * @param null|Config|Core $init
+	 * @param null|Config $config
 	 */
-	public function __construct($init = null) {
-		if ($init instanceof Config) {
-			$this->core = new Core($init);
-		} elseif ($init instanceof Core) {
-			$this->core = $init;
+	public function __construct(Config $config = null) {
+		if ($config !== null) {
+			$this->config = $config;
 		} else {
-			$this->core = new Core();
+			$this->config = Config::getInstance();
 		}
 	}
 
@@ -41,26 +41,43 @@ class Application {
 
 		$klein = new Klein();
 
+		$klein->respond(function (Request $request, Response $response, ServiceProvider $service, App $app) use ($klein) {
+
+			// lazy load shurl core and templater
+			$app->register('core', function () {
+				return new Core($this->config);
+			});
+			$app->register('templater', function () use ($app, $request, $response) {
+				return new Templater($app->core, $request, $response);
+			});
+
+			// error handling for each request
+			$klein->onError(function ($klein, $message, $type, $throwable) use ($request, $response, $app) {
+				$app->core->logException($throwable);
+				$app->templater->error($throwable);
+			});
+		});
+
 		// show welcome page as default
-		$klein->respond('/', function (Request $request) {
-			$this->core->viewWelcome();
+		$klein->respond('/', function (Request $request, Response $response, ServiceProvider $service, App $app) {
+			$app->templater->welcome($app->core->getURLCount());
 		});
 
 		// match and preview slugs
-		$klein->respond('GET', '/preview/[:slug](/)?', function (Request $request) {
-			$url = $this->core->getUrl($request->slug);
+		$klein->respond('GET', '/preview/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
+			$url = $app->core->getUrl($request->slug);
 
-			$this->core->track($url, $request);
-			$this->core->viewTemplate('preview', [
-				'url' => $url,
+			$app->core->track($url, $request);
+			$app->templater->view('preview', [
+				'redirect' => $url,
 			]);
 		});
 
 		// match and preview slugs
-		$klein->respond('GET', '/api/[:slug](/)?', function (Request $request, Response $response) {
-			$url = $this->core->getUrl($request->slug);
+		$klein->respond('GET', '/api/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
+			$url = $app->core->getUrl($request->slug);
 
-			$this->core->track($url, $request);
+			$app->core->track($url, $request);
 			$response->json([
 				'id'       => $url->id,
 				'slug'     => $url->slug,
@@ -70,24 +87,24 @@ class Application {
 		});
 
 		// match and redirect slugs
-		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response) {
-			$url = $this->core->getUrl($request->slug);
+		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
+			$url = $app->core->getUrl($request->slug);
 
-			$this->core->track($url, $request);
-			$this->core->redirect($url, $response);
+			$app->core->track($url, $request);
+
+			if ($url->mode() === 'html') {
+				$app->templater->view('redirect', ['redirect' => $url]);
+			} else {
+				$app->core->redirect($url, $response);
+			}
 		});
 
 		// match scss assets, and parse them
-		$klein->respond('GET', '/assets/css/[:stylesheet].css', function (Request $request, Response $response) {
-			$this->core->viewAsset($request->stylesheet, $response);
+		$klein->respond('GET', '/assets/css/[:stylesheet].css', function (Request $request, Response $response, ServiceProvider $service, App $app) {
+			$app->templater->asset($request->stylesheet);
 		});
 
-		// run dispatcher and handle thrown exceptions
-		try {
-			$klein->dispatch();
-		} catch (\Throwable $throwable) {
-			$this->core->handleException($throwable);
-		}
+		$klein->dispatch();
 
 	}
 

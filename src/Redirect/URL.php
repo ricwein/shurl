@@ -7,7 +7,7 @@ use ricwein\shurl\Config\Config;
 /**
  * represents a shurl URL object
  */
-class URL {
+class URL extends \ArrayObject {
 
 	/**
 	 * redirect ID

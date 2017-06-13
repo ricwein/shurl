@@ -2,10 +2,14 @@
 <html lang="de">
 	<head>
 		{% include 'templates/head' %}
+
+		{# Control the behavior of search engine crawling and indexing #}
+		<meta name="robots" content="index,nofollow">
+		<meta name="application-name" content="{{ config.name }}">
 	</head>
 	<body>
 		<div class="container header">
-			<img src="/images/Icon.png" class="icon" alt="{{ config.name }} Icon" />
+			<img src="{{ url.base }}/images/Icon.png" class="icon" alt="{{ config.name }} Icon" />
 			<h1 class="center">Welcome to {{ config.name }}</h1>
 			<span class="center">
 				<p><b>{{ count }}</b> Links</p>

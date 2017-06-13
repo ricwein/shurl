@@ -41,7 +41,7 @@ class Show extends Command {
 	 * @param OutputInterface $output
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$pixie = (new Core())->getDB();
+		$pixie = (new Core())->db;
 
 		$query = $pixie->table('redirects');
 

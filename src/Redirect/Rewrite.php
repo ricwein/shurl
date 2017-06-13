@@ -66,6 +66,8 @@ class Rewrite {
 
 		$this->response->header('Location', $this->url->original);
 		$this->response->send();
+
+		exit(0);
 	}
 
 	/**
@@ -134,6 +136,8 @@ class Rewrite {
 
 		$this->response->body($ressource['content']);
 		$this->response->send();
+
+		exit(0);
 	}
 
 	/**

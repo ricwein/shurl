@@ -86,9 +86,10 @@ class Config {
 		],
 
 		'tracking'        => [
-			'enabled'    => true,
-			'respectDNT' => true,
-			'store'      => [
+			'enabled'     => true,
+			'respectDNT'  => true,
+			'skipOnError' => true,
+			'store'       => [
 				'ip'        => true,
 				'userAgent' => true,
 				'referrer'  => true,
@@ -96,22 +97,25 @@ class Config {
 		],
 
 		'views'           => [
-			'path'        => 'views/',
-			'extension'   => '.html.twig',
-			'variables'   => [],
-			'useFileHash' => 'md5', // false or hash method as string
-			'route'       => [
+			'path'           => 'views/',
+			'extension'      => '.html.twig',
+			'variables'      => [],
+			'useFileHash'    => 'md5', // false or hash method as string
+			'removeComments' => true,
+			'route'          => [
 				'error'    => 'pages/error',
 				'welcome'  => 'pages/welcome',
 				'redirect' => 'pages/redirect',
 				'preview'  => 'pages/preview',
 			],
-			'expires'     => 604800, // 1w
+			'expires'        => 604800, // 1w
 		],
 
 		'assets'          => [
 			'path'      => 'assets/',
-			'variables' => [],
+			'variables' => [
+				'color-accent' => '#28aae1',
+			],
 			'inline'    => false,
 			'expires'   => 604800, // 1w
 		],

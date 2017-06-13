@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\Template\Filter;
+namespace ricwein\shurl\Template\Processor;
 
 use ricwein\shurl\Template\Engine\Variables;
 
@@ -24,7 +24,6 @@ class Comments extends Variables {
 		return preg_replace_callback($regex, function (array $match) use ($inline): string {
 			return ($inline && isset($match[1]) ? '<!-- ' . trim($match[1]) . ' -->' : '');
 		}, $content);
-		return $content;
 	}
 
 }

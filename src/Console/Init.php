@@ -46,7 +46,7 @@ class Init extends Command {
 		]);
 
 		// init db-connection
-		$pixie = (new Core($config))->getDB();
+		$pixie = (new Core($config))->db;
 
 		// parse sql query files
 		$queries  = '';
@@ -55,12 +55,14 @@ class Init extends Command {
 			'rewriteModes' => Rewrite::MODES,
 			'version'      => ['current' => number_format((float) $this->getApplication()->getVersion(), 1, '.', '')],
 		];
+
+		$templater = new Template($config);
 		if ($input->getOption('dropforce')) {
-			$queries .= (new Template('drop.database', $config))->make($bindings);
+			$queries .= $templater->make('drop.database', $bindings);
 		} elseif ($input->getOption('force')) {
-			$queries .= (new Template('drop.tables', $config))->make($bindings);
+			$queries .= $templater->make('drop.tables', $bindings);
 		}
-		$queries .= (new Template('create', $config))->make($bindings);
+		$queries .= $templater->make('create', $bindings);
 
 		if ($input->getOption('output')) {
 			$output->writeln($queries);

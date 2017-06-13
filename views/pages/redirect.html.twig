@@ -2,19 +2,20 @@
 <html lang="de">
 	<head>
 		{% include 'templates/head' %}
-		<meta http-equiv="refresh" content="{{ wait }}; url={{ url.original }}" />
-		<link rel="canonical" href="{{ url.original }}"/>
+		<meta http-equiv="refresh" content="{{ wait }}; url={{ redirect.original }}" />
+		<link rel="canonical" href="{{ redirect.original }}"/>
+		<meta name="robots" content="noindex,nofollow">
+		<meta name="referrer" content="no-referrer">
+		<link rel="prefetch" href="{{ redirect.original }}">
 	</head>
 	<body>
 		<div class="container header">
-			<h1 class="center">Redirecting in <i>{{ wait }}s</i></h1>
-			<span class="center">
-				<p>to: <a href="{{ url.original }}" rel="noreferrer nofollow">{{ url.original }}</a></p>
-			</span>
+			<h1>Redirecting in <i class="accent">{{ wait }}s</i></h1>
+			<p>to: <a href="{{ redirect.original }}" rel="noreferrer nofollow">{{ redirect.original }}</a></p>
 		</div>
 		<script>
 			if(window.location.hash) {
-				document.getElementById('url').setAttribute('content', '0; url="{{ url.original }}"' + window.location.hash);
+				document.getElementById('url').setAttribute('content', '{{ wait }}; url="{{ redirect.original }}"' + window.location.hash);
 			}
 		</script>
 	</body>

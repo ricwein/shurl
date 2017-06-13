@@ -11,12 +11,10 @@ use Monolog\Logger;
 use Pixie\Connection;
 use Pixie\QueryBuilder\QueryBuilderHandler;
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Exception\DatabaseUnreachable;
 use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Redirect\Rewrite;
 use ricwein\shurl\Redirect\URL;
-use ricwein\shurl\Template\Engine\File;
-use ricwein\shurl\Template\Filter\Assets;
-use ricwein\shurl\Template\Template;
 
 /**
  * shurl core class
@@ -31,7 +29,7 @@ class Core {
 	/**
 	 * @var QueryBuilderHandler
 	 */
-	protected $pixie;
+	protected $pixie = null;
 
 	/**
 	 * @var Logger
@@ -72,20 +70,6 @@ class Core {
 		if (!$this->config->development) {
 			ErrorHandler::register($this->logger);
 		}
-
-		try {
-
-			// init new database connection and Pixie querybuilder
-			$this->pixie = new QueryBuilderHandler(new Connection(
-				$this->config->database['driver'],
-				$this->config->database
-			));
-
-		} catch (\Throwable $exception) {
-
-			throw new \Exception('Unable to connect to Database', 1, $exception);
-
-		}
 	}
 
 	/**
@@ -97,10 +81,11 @@ class Core {
 	 */
 	public function redirect(URL $url, Response $response) {
 
+		$rewrite = new Rewrite($this->config, $url, $response);
 		switch ($url->mode()) {
-			case 'html':$this->viewTemplate('redirect', ['url' => $url]);
-			case 'passthrough':(new Rewrite($this->config, $url, $response))->passthrough($this->config->cache['passthrough'] ? $this->cache : null);
-			default:(new Rewrite($this->config, $url, $response))->rewrite($this->config->redirect['permanent'] && !$this->config->development);
+			case 'passthrough':$rewrite->passthrough($this->config->cache['passthrough'] ? $this->cache : null);
+			case 'redirect':$rewrite->rewrite($this->config->redirect['permanent'] && !$this->config->development);
+			default:throw new \UnexpectedValueException(sprintf('invalid redirect mode \'%s\'', $url->mode()), 500);
 		}
 	}
 
@@ -108,7 +93,7 @@ class Core {
 	 * @param \Throwable $throwable
 	 * @return void
 	 */
-	public function handleException(\Throwable $throwable) {
+	public function logException(\Throwable $throwable) {
 
 		if ($this->config->development) {
 			throw $throwable;
@@ -119,89 +104,34 @@ class Core {
 			$throwable->getMessage(),
 			['exception' => $throwable]
 		);
-
-		$this->viewError($throwable);
-	}
-
-	/**
-	 * @param string $templateFile
-	 * @param array|object $bindings
-	 * @param callable|null $filter
-	 * @return void
-	 * @throws \UnexpectedValueException
-	 */
-	public function viewTemplate(string $templateFile, $bindings = null, callable $filter = null) {
-		$template = new Template($templateFile, $this->config, $this->cache);
-		$template->render(array_merge([
-			'wait' => (int) $this->config->redirect['wait'],
-		], $bindings));
-	}
-
-	/**
-	 * @param \Throwable $throwable
-	 * @return void
-	 */
-	public function viewError(\Throwable $throwable) {
-
-		// set http response code from exception
-		http_response_code($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
-
-		$this->viewTemplate('error', ['exception' => [
-			'type'    => (new \ReflectionClass($throwable))->getShortName(),
-			'code'    => $throwable->getCode(),
-			'message' => $throwable->getMessage(),
-		]]);
-	}
-
-	/**
-	 * @param string $assetName
-	 * @param Response $response
-	 * @return void
-	 */
-	public function viewAsset(string $assetName, Response $response) {
-		if (false === $assetPath = realpath(__DIR__ . '/../../' . trim($this->config->assets['path'], '/'))) {
-			throw new NotFound('assets path not found', 404);
-		}
-		$asset  = new File($assetPath, $this->config);
-		$parser = new Assets($asset, $this->config);
-		$styles = $parser->parse($assetName . '.scss');
-
-		$response->body($styles);
-		$response->header('Content-Type', 'text/css; charset=utf-8');
-		$response->header('Cache-Control', 'max-age=' . $this->config->assets['expires']);
-		$response->send();
-	}
-
-	/**
-	 * @return void
-	 */
-	public function viewWelcome() {
-
-		if ($this->cache === null) {
-			$this->viewTemplate('welcome', [
-				'count' => $this->_getEntryCount(),
-			]);
-		}
-
-		$countCache = $this->cache->getItem('count');
-
-		if (null === $count = $countCache->get()) {
-			$count = $this->_getEntryCount();
-			$countCache->set($count);
-			$countCache->expiresAfter(60);
-			$this->cache->save($countCache);
-		}
-
-		$this->viewTemplate('welcome', [
-			'count' => $count,
-		]);
 	}
 
 	/**
 	 * @return int
 	 */
-	protected function _getEntryCount(): int{
-		$query = $this->pixie->table('redirects');
+	public function getURLCount(): int {
+
+		if ($this->cache === null) {
+			return $this->countURLs();
+		}
+
+		$countCache = $this->cache->getItem('count');
+
+		if (null === $count = $countCache->get()) {
+			$count = $this->countURLs();
+			$countCache->set($count);
+			$countCache->expiresAfter(60);
+			$this->cache->save($countCache);
+		}
+
+		return $count;
+	}
+
+	/**
+	 * @return int
+	 */
+	protected function countURLs(): int{
+		$query = $this->db->table('redirects');
 		$query->select([$query->raw('COUNT(*) as count')]);
 
 		// only select currently enabled entries
@@ -214,6 +144,7 @@ class Core {
 			$db->where($db->raw('valid_from < NOW()'));
 			$db->orWhereNull('valid_from');
 		});
+
 		return $query->first()->count;
 	}
 
@@ -241,12 +172,12 @@ class Core {
 			'hash' => hash($this->config->urls['hash'], $url, false),
 		];
 
-		$query = $this->pixie->table('urls');
+		$query = $this->db->table('urls');
 		$query->onDuplicateKeyUpdate($data);
 
-		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
+		// workaround for db not returning LAST_INSERT_ID(), if onDuplicate matches
 		if (0 >= $urlID = $query->insert($data)) {
-			$urlTemp = $this->pixie->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
+			$urlTemp = $this->db->table('urls')->where('url', $data['url'])->where('hash', $data['hash'])->select('id')->first();
 			if (!$urlTemp || !isset($urlTemp->id)) {
 				throw new \UnexpectedValueException('database error: unable to insert data', 500);
 			}
@@ -271,12 +202,12 @@ class Core {
 			'enabled'    => 1,
 		];
 
-		$query = $this->pixie->table('redirects');
+		$query = $this->db->table('redirects');
 		$query->onDuplicateKeyUpdate($data);
 
-		// workaround for pixie not returning LAST_INSERT_ID(), if onDuplicate matches
+		// workaround for db not returning LAST_INSERT_ID(), if onDuplicate matches
 		if (0 >= $redirectID = $query->insert($data)) {
-			$redirectTemp = $this->pixie->table('redirects')->where('url_id', $data['url_id'])->where('slug', $data['slug'])->select('id')->first();
+			$redirectTemp = $this->db->table('redirects')->where('url_id', $data['url_id'])->where('slug', $data['slug'])->select('id')->first();
 			if (!$redirectTemp || !isset($redirectTemp->id)) {
 				throw new \UnexpectedValueException('database error: unable to insert data', 500);
 			}
@@ -296,7 +227,7 @@ class Core {
 
 		// skipt cache, and fetch directly from database
 		if ($this->cache === null) {
-			$url = $this->_fetchURL($slug);
+			$url = $this->fetchURL($slug);
 			return $url;
 		}
 
@@ -309,7 +240,7 @@ class Core {
 
 		if (null === $url = $urlCache->get()) {
 			// fetch entry from db, and safe in cache
-			$url = $this->_fetchURL($slug);
+			$url = $this->fetchURL($slug);
 
 			$urlCache->set($url);
 			$urlCache->expiresAfter($this->config->cache['duration']);
@@ -325,8 +256,8 @@ class Core {
 	 * @return URL
 	 * @throws NotFound
 	 */
-	protected function _fetchURL(string $slug): URL{
-		$query = $this->pixie->table('redirects');
+	protected function fetchURL(string $slug): URL{
+		$query = $this->db->table('redirects');
 
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 
@@ -413,18 +344,64 @@ class Core {
 		}
 
 		// save visitor data
-		$query = $this->pixie->table('visits');
-		$query->insert($visit);
+		try {
+			$query = $this->db->table('visits');
+			$query->insert($visit);
+		} catch (\Throwable $exception) {
+			if ($this->config->tracking['skipOnError'] && $exception instanceof DatabaseUnreachable) {
+				return $this;
+			}
+			throw $exception;
+		}
 
 		return $this;
 	}
 
 	/**
-	 * get internal Pixie Database QueryBuilder Object
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function __get(string $name) {
+
+		// exceptional handling for lazy db loading
+		if ($name === 'db') {
+			return $this->getDB();
+		}
+
+		if (property_exists($this, $name)) {
+			return $this->$name;
+		}
+		return null;
+	}
+
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	public function __isset(string $name): bool {
+		return property_exists($this, $name);
+	}
+
+	/**
+	 * @throws \Exception
 	 * @return QueryBuilderHandler
 	 */
-	public function getDB(): QueryBuilderHandler {
-		return $this->pixie;
+	protected function getDB(): QueryBuilderHandler {
+		try {
+			if ($this->pixie !== null) {
+				return $this->pixie;
+			}
+			$this->pixie = new QueryBuilderHandler(new Connection(
+				$this->config->database['driver'],
+				$this->config->database
+			));
+			return $this->pixie;
+
+		} catch (\Throwable $exception) {
+
+			throw new DatabaseUnreachable('The Database Server is currently not reachable, please try again later', 503, $exception);
+
+		}
 	}
 
 }

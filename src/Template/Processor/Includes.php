@@ -1,6 +1,6 @@
 <?php
 
-namespace ricwein\shurl\Template\Filter;
+namespace ricwein\shurl\Template\Processor;
 
 use ricwein\shurl\Template\Engine\Functions;
 
