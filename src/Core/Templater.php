@@ -57,7 +57,9 @@ class Templater {
 
 		$content = $template->make($templateFile, array_replace_recursive($this->fetchVariables(), [
 			'assets'   => $this->core->config->assets['variables'],
-			'template' => ['name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->core->config->views['extension'], '', $templateFile), PATHINFO_FILENAME))))],
+			'template' => [
+				'name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->core->config->views['extension'], '', $templateFile), PATHINFO_FILENAME)))),
+			],
 		], (array) $bindings));
 
 		$this->response->body($content);
@@ -70,14 +72,21 @@ class Templater {
 	 */
 	protected function fetchVariables(): array{
 		$protocol = ($this->request->isSecure() ? 'https://' : 'http://');
-		$host     = ($this->request->server()->get('SERVER_NAME') ? $this->request->server()->get('SERVER_NAME') : $this->request->headers()->get('Host'));
+		$host     = $this->request->server()->get('SERVER_NAME');
 
 		return array_replace_recursive([
 			'wait'   => (int) $this->core->config->redirect['wait'],
-			'url'    => ['base' => $protocol . $host, 'protocol' => $protocol, 'host' => $host, 'root' => $this->core->config->rootURL],
 			'config' => $this->core->config->get(),
+			'url'    => [
+				'protocol' => $protocol,
+				'host'     => $host,
+				'base'     => $protocol . $host,
+				'root'     => $this->core->config->rootURL,
+			],
 		], [
-			'config' => ['name' => ucfirst(strtolower($this->core->config->name))],
+			'config' => [
+				'name' => ucfirst(strtolower($this->core->config->name)),
+			],
 		]);
 	}
 
