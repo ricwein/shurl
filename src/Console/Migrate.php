@@ -84,7 +84,7 @@ class Migrate extends Command {
 		} elseif ($versions['to'] === null) {
 			throw new \UnexpectedValueException('invalid version number: to');
 		} elseif ($versions['current'] === null) {
-			throw new \UnexpectedValueException('inv®alid version number: current');
+			throw new \UnexpectedValueException('invalid version number: current');
 		} elseif ($input->getOption('rollback') && $versions['to'] >= $versions['current']) {
 			throw new \UnexpectedValueException('invalid versions for rollback');
 		} elseif (!$input->getOption('rollback') && $versions['to'] <= $versions['current']) {
