@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-	<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+<?php xmlversion = '1.0'encoding = 'utf-8';?>
+	<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200" xml:space="preserve">
 	<g>
 		<path d="M52.5,59C74.8,59,93,77.2,93,99.5S74.8,140,52.5,140S12,121.8,12,99.5S30.2,59,52.5,59 M52.5,49C24.6,49,2,71.6,2,99.5
 			S24.6,150,52.5,150S103,127.4,103,99.5S80.4,49,52.5,49L52.5,49z"/>
