@@ -383,14 +383,17 @@ class Core {
 	}
 
 	/**
+	 * lazy-loads database connection
 	 * @throws \Exception
 	 * @return QueryBuilderHandler
 	 */
 	protected function getDB(): QueryBuilderHandler {
 		try {
+
 			if ($this->pixie !== null) {
 				return $this->pixie;
 			}
+
 			$this->pixie = new QueryBuilderHandler(new Connection(
 				$this->config->database['driver'],
 				$this->config->database

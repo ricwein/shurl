@@ -3,8 +3,14 @@
 /logs/
 /cache/
 /assets/pages/custom/
+
 /public/css/
 /public/images/
+
+*.sqlite
+*.db
+
+# ressources
 *.psd
 *.ai
 resources/*.png

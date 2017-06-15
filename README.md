@@ -2,10 +2,6 @@
 
 > Another PHP based URL shortener.
 
-## Database
-
-It's using a PDO Database Wrapper in the background, so you're not limited to MySQL!
-But even if so, this project uses prepared statements, to prevent sql injections.
 
 ## Install
 
@@ -74,3 +70,19 @@ Removing an URL from the list, is as easy as adding one. Execute `bin/shurl url:
 ## List available URLs
 
 A list of all currently available URls can be accessed through: `bin/shurl url:show`
+
+## Routes
+
+There are several different routes, which are supported by shurl.
+
+- **/** The root displays a welcome message
+- **/<i>{slug}</i>** redirects to a given url
+- **/preview/<i>{slug}</i>** shows a resolved-URL preview
+- **/api/<i>{slug}</i>** exposes a simple JSON api (`GET` Method), which provides access to the resolved URL
+
+```json
+{
+	"slug": "shurl",
+	"original": "https:\/\/s.ricwein.com"
+}
+```

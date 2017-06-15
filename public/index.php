@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use ricwein\shurl\Core\Application;
+use ricwein\shurl\Core\Router;
 
-$app = new Application();
-$app->route();
+$shurl = new Router();
+$shurl->dispatch();

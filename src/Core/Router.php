@@ -13,7 +13,7 @@ use ricwein\shurl\Config\Config;
  * shurl application,
  * using the shurl core to provide
  */
-class Application {
+class Router {
 
 	/**
 	 * @var Config
@@ -22,7 +22,7 @@ class Application {
 
 	/**
 	 * init new shurl Core
-	 * @param null|Config $config
+	 * @param Config|null $config
 	 */
 	public function __construct(Config $config = null) {
 		if ($config !== null) {
@@ -37,7 +37,7 @@ class Application {
 	 * @return void
 	 * @throws \Throwable
 	 */
-	public function route() {
+	public function dispatch() {
 
 		$klein = new Klein();
 
@@ -66,8 +66,8 @@ class Application {
 		// match and preview slugs
 		$klein->respond('GET', '/preview/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
 			$url = $app->core->getUrl($request->slug);
-
 			$app->core->track($url, $request);
+
 			$app->templater->view('preview', [
 				'redirect' => $url,
 			]);
@@ -76,10 +76,9 @@ class Application {
 		// match and preview slugs
 		$klein->respond('GET', '/api/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
 			$url = $app->core->getUrl($request->slug);
-
 			$app->core->track($url, $request);
+
 			$response->json([
-				'id'       => $url->id,
 				'slug'     => $url->slug,
 				'original' => $url->original,
 			]);
@@ -89,7 +88,6 @@ class Application {
 		// match and redirect slugs
 		$klein->respond('GET', '/[:slug](/)?', function (Request $request, Response $response, ServiceProvider $service, App $app) {
 			$url = $app->core->getUrl($request->slug);
-
 			$app->core->track($url, $request);
 
 			if ($url->mode() === 'html') {
@@ -105,7 +103,5 @@ class Application {
 		});
 
 		$klein->dispatch();
-
 	}
-
 }
