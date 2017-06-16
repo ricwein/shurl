@@ -41,7 +41,8 @@ class Show extends Command {
 	 * @param OutputInterface $output
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$pixie = (new Core())->db;
+		$config = Config::getInstance();
+		$pixie  = (new Core($config))->db;
 
 		$query = $pixie->table('redirects');
 
@@ -50,25 +51,26 @@ class Show extends Command {
 
 		// aggregate visitors
 		if (null === $distinct = $input->getOption('distinct')) {
-			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(%svisits.id) as hits', Config::getInstance()->database['prefix']))]);
+			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(%svisits.id) as hits', $config->database['prefix']))]);
 		} elseif (!in_array($distinct, static::DISTINCT_COL)) {
 			throw new \UnexpectedValueException(sprintf('"%s" is not a valid distinction column mode, please use one of the following: ' . implode(', ', static::DISTINCT_COL), $distinct));
 		} else {
-			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(DISTINCT %svisits.%s) + SUM(CASE WHEN %svisits.%s IS NULL THEN 1 ELSE 0 END) as hits', Config::getInstance()->database['prefix'], $distinct, Config::getInstance()->database['prefix'], $distinct))]);
+			$query->select(['redirects.*', 'urls.url', $query->raw(sprintf('COUNT(DISTINCT %svisits.%s) + SUM(CASE WHEN %svisits.%s IS NULL THEN 1 ELSE 0 END) as hits', $config->database['prefix'], $distinct, $config->database['prefix'], $distinct))]);
 		}
 
 		$query->groupBy('redirects.id');
 		$query->orderBy(['hits', 'redirects.id'], 'DESC');
+		$now = new \DateTime();
 
 		// only select currently enabled entries
 		if (!$input->getOption('all')) {
 			$query->where('redirects.enabled', '=', true);
-			$query->where(function ($db) {
-				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_to > NOW()'));
+			$query->where(function ($db) use ($now, $config) {
+				$db->where('redirects.valid_to', '>', $now->format($config->timestampFormat['database']));
 				$db->orWhereNull('redirects.valid_to');
 			});
-			$query->where(function ($db) {
-				$db->where($db->raw(Config::getInstance()->database['prefix'] . 'redirects.valid_from < NOW()'));
+			$query->where(function ($db) use ($now, $config) {
+				$db->where('redirects.valid_from', '<', $now->format($config->timestampFormat['database']));
 				$db->orWhereNull('redirects.valid_from');
 			});
 		}
@@ -107,7 +109,7 @@ class Show extends Command {
 
 			// also add full shortened URL
 			if ($input->getOption('shortenedURL')) {
-				$url['shortened'] = rtrim(Config::getInstance()->rootURL, '/') . '/' . $entry->slug;
+				$url['shortened'] = rtrim($config->rootURL, '/') . '/' . $entry->slug;
 			}
 
 			$entries[] = $url;

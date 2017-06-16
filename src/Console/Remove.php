@@ -47,17 +47,18 @@ class Remove extends Command {
 
 		$config = Config::getInstance();
 		$pixie  = (new Core($config))->db;
+		$now    = new \DateTime();
 
 		$query = $pixie->table('redirects');
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 
 		$query->where('redirects.enabled', '=', true);
-		$query->where(function ($db) {
-			$db->where($db->raw($config->database['prefix'] . 'redirects.valid_to > NOW()'));
+		$query->where(function ($db) use ($now, $config) {
+			$db->where('redirects.valid_to', '>', $now->format($config->timestampFormat['database']));
 			$db->orWhereNull('redirects.valid_to');
 		});
-		$query->where(function ($db) {
-			$db->where($db->raw($config->database['prefix'] . 'redirects.valid_from < NOW()'));
+		$query->where(function ($db) use ($now, $config) {
+			$db->where('redirects.valid_from', '<', $now->format($config->timestampFormat['database']));
 			$db->orWhereNull('redirects.valid_from');
 		});
 		$query->where(function ($db) use ($search) {

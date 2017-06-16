@@ -33,7 +33,8 @@ class Router {
 	}
 
 	/**
-	 * parse reqeusted shortened URL and redirect to original, if available
+	 * parse reqeusted shorten
+	 * ed URL and redirect to original, if available
 	 * @return void
 	 * @throws \Throwable
 	 */

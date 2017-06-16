@@ -123,21 +123,23 @@ class Config {
 
 	/**
 	 * provide singleton access to configurations
-	 * @param bool $createNew init new instance, even if one already exists
+	 * @param array|null $override
 	 * @return self
 	 */
-	public static function getInstance(bool $createNew = false): self {
-		if ($createNew === true || static::$__instance === null) {
-			static::$__instance = new static($createNew);
+	public static function getInstance(array $override = null): self {
+		if (static::$__instance === null) {
+			static::$__instance = new static();
+		}
+		if ($override !== null) {
+			$this->set($override);
 		}
 		return static::$__instance;
 	}
 
 	/**
 	 * init new config object
-	 * @param bool $createNew init new instance, even if one already exists
 	 */
-	private function __construct(bool $createNew) {
+	private function __construct() {
 
 		$this->_loadConfigFiles();
 
@@ -171,6 +173,15 @@ class Config {
 			return $this->__config[$name];
 		}
 		return null;
+	}
+
+	/**
+	 * @param  array $config
+	 * @return self
+	 */
+	public function set(array $config) {
+		$this->__config = array_replace_recursive($this->__config, $config);
+		return $this;
 	}
 
 	/**

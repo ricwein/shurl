@@ -133,15 +133,16 @@ class Core {
 	protected function countURLs(): int{
 		$query = $this->db->table('redirects');
 		$query->select([$query->raw('COUNT(*) as count')]);
+		$now = new \DateTime();
 
 		// only select currently enabled entries
 		$query->where('enabled', '=', true);
-		$query->where(function ($db) {
-			$db->where($db->raw('valid_to > NOW()'));
+		$query->where(function ($db) use ($now) {
+			$db->where('valid_to', '>', $now->format($this->config->timestampFormat['database']));
 			$db->orWhereNull('valid_to');
 		});
-		$query->where(function ($db) {
-			$db->where($db->raw('valid_from < NOW()'));
+		$query->where(function ($db) use ($now) {
+			$db->where('valid_from', '<', $now->format($this->config->timestampFormat['database']));
 			$db->orWhereNull('valid_from');
 		});
 
@@ -161,6 +162,7 @@ class Core {
 	public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, string $redirectMode): URL{
 
 		$url          = trim($url);
+		$now          = new \DateTime();
 		$redirectMode = strtolower(trim($redirectMode));
 
 		if (!in_array($redirectMode, Rewrite::MODES)) {
@@ -196,6 +198,7 @@ class Core {
 		$data = [
 			'url_id'     => $urlID,
 			'slug'       => trim($slug),
+			'created'    => $now->format($this->config->timestampFormat['database']),
 			'valid_to'   => ($expires !== null ? date($this->config->timestampFormat['database'], strtotime($expires)) : null),
 			'valid_from' => ($starts !== null ? date($this->config->timestampFormat['database'], strtotime($starts)) : null),
 			'mode'       => $redirectMode,
@@ -258,17 +261,18 @@ class Core {
 	 */
 	protected function fetchURL(string $slug): URL{
 		$query = $this->db->table('redirects');
+		$now   = new \DateTime();
 
 		$query->join('urls', 'urls.id', '=', 'redirects.url_id', 'LEFT');
 
 		$query->where('redirects.slug', trim($slug));
 		$query->where('redirects.enabled', true);
-		$query->where(function ($db) {
-			$db->where($db->raw($this->config->database['prefix'] . 'redirects.valid_to > NOW()'));
+		$query->where(function ($db) use ($now) {
+			$db->where('redirects.valid_to', '>', $now->format($this->config->timestampFormat['database']));
 			$db->orWhereNull('redirects.valid_to');
 		});
-		$query->where(function ($db) {
-			$db->where($db->raw($this->config->database['prefix'] . 'redirects.valid_from < NOW()'));
+		$query->where(function ($db) use ($now) {
+			$db->where('redirects.valid_from', '<', $now->format($this->config->timestampFormat['database']));
 			$db->orWhereNull('redirects.valid_from');
 		});
 
@@ -317,9 +321,11 @@ class Core {
 			return $this;
 		}
 
+		$now = new \DateTime();
+
 		$visit = [
 			'redirect_id' => $url->id,
-			'visited'     => date($this->config->timestampFormat['database']),
+			'visited'     => $now->format($this->config->timestampFormat['database']),
 			'origin'      => $this->getBaseURL($request),
 		];
 
@@ -388,23 +394,23 @@ class Core {
 	 * @return QueryBuilderHandler
 	 */
 	protected function getDB(): QueryBuilderHandler {
-		try {
 
-			if ($this->pixie !== null) {
-				return $this->pixie;
-			}
-
-			$this->pixie = new QueryBuilderHandler(new Connection(
-				$this->config->database['driver'],
-				$this->config->database
-			));
+		if ($this->pixie !== null) {
 			return $this->pixie;
-
-		} catch (\Throwable $exception) {
-
-			throw new DatabaseUnreachable('The Database Server is currently not reachable, please try again later', 503, $exception);
-
 		}
+
+		$dbConfig = $this->config->database;
+
+		if (stripos($dbConfig['driver'], 'sqlite') !== false) {
+			$dbConfig['database'] = __DIR__ . '/../../resources/database/' . $dbConfig['database'] . '.sqlite';
+		}
+
+		$this->pixie = new QueryBuilderHandler(new Connection(
+			$dbConfig['driver'],
+			$dbConfig
+		));
+
+		return $this->pixie;
 	}
 
 }

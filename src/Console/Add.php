@@ -2,6 +2,7 @@
 
 namespace ricwein\shurl\Console;
 
+use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Core;
 use ricwein\shurl\Redirect\Rewrite;
 use Symfony\Component\Console\Command\Command;
@@ -91,8 +92,12 @@ class Add extends Command {
 		}
 
 		$output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);
+
 		$output->writeln('Original URL:  ' . $info->original);
-		$output->writeln('Slug:          ' . $info->slug);
+		$output->writeln('Slug:          ' . $info->slug . PHP_EOL);
+
 		$output->writeln('Shortened URL: ' . $info->shortened);
+		$output->writeln('Preview URL:   ' . rtrim(Config::getInstance()->rootURL, '/') . '/preview/' . $info->slug);
+		$output->writeln('API URL:       ' . rtrim(Config::getInstance()->rootURL, '/') . '/api/' . $info->slug);
 	}
 }

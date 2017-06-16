@@ -4,6 +4,7 @@ namespace ricwein\shurl\Core;
 
 use Klein\Request;
 use Klein\Response;
+use ricwein\shurl\Exception\DatabaseUnreachable;
 use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Processor;
@@ -95,6 +96,11 @@ class Templater {
 	 * @return void
 	 */
 	public function error(\Throwable $throwable) {
+
+		// disguise database-exception to prevent credential-leaking messages
+		if ($throwable instanceof \PDOException) {
+			$throwable = new DatabaseUnreachable('The Database Server is currently not reachable, please try again later', 503, $throwable);
+		}
 
 		// set http response code from exception
 		$this->response->status()->setCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
