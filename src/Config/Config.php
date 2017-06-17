@@ -131,7 +131,7 @@ class Config {
 			static::$__instance = new static();
 		}
 		if ($override !== null) {
-			$this->set($override);
+			static::$__instance->set($override);
 		}
 		return static::$__instance;
 	}

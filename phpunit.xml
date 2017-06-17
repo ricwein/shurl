@@ -1,0 +1,23 @@
+<?php xmlversion = '1.0'encoding = 'UTF-8';?>
+<phpunit bootstrap="vendor/autoload.php" backupGlobals="false" colors="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="true" stopOnFailure="false" syntaxCheck="false">
+	<php>
+		<ini name="error_reporting" value="-1"/>
+		<ini name="intl.default_locale" value="en"/>
+		<ini name="intl.error_level" value="0"/>
+		<ini name="memory_limit" value="-1"/>
+
+		<env name="imports" value="config/config.yml"/>
+	</php>
+
+	<testsuites>
+		<testsuite name="Shurl Unit-testing">
+			<directory suffix=".php">./tests/</directory>
+		</testsuite>
+	</testsuites>
+
+	<filter>
+		<whitelist processUncoveredFilesFromWhitelist="true">
+			<directory suffix=".php">./src/</directory>
+		</whitelist>
+	</filter>
+</phpunit>

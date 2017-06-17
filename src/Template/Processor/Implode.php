@@ -23,7 +23,7 @@ class Implode extends Variables {
 		// replace all variables
 		$content = preg_replace_callback($this->getRegex('([^}]+)\|\s*implode\([\"|\']([^}]+)[\"|\']\)'), function ($match) use ($bindings): string {
 			$variable = explode('.', trim($match[1]));
-			$glue     = stripslashes(trim($match[2]));
+			$glue     = stripslashes($match[2]);
 
 			// traverse template variable
 			$current = $bindings;
@@ -45,8 +45,8 @@ class Implode extends Variables {
 			// check for return type
 			if ($current === $bindings) {
 				return '';
-			} elseif (is_array($current)) {
-				return implode($glue, $current);
+			} elseif (is_array($current) || is_object($current)) {
+				return implode($glue, (array) $current);
 			} else {
 				return '';
 			}
