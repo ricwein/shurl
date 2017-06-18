@@ -1,25 +1,23 @@
 <?php declare (strict_types = 1);
 
-namespace tests;
+namespace tests\Template;
 
 use PHPUnit\Framework\TestCase;
-use ricwein\shurl\Template\Processor\Bindings;
-use ricwein\shurl\Template\Processor\Comments;
-use ricwein\shurl\Template\Processor\Implode;
+use ricwein\shurl\Config\Config;
+use ricwein\shurl\Template\Processor;
 
 /**
- * test shurl Config class
+ * test shurl Template Engine processors
  *
- * @author Richard Weinhold
- * @covers Template
+ * @covers Processor
  */
-class TemplateTest extends TestCase {
+class ProcessorTest extends TestCase {
 
 	/**
 	 * test to comment template-processor
 	 */
 	public function testCommentProcessor() {
-		$processor = new Comments();
+		$processor = new Processor\Comments();
 		$input     = '{# test #} works';
 
 		$output = $processor->replace($input, false);
@@ -33,7 +31,7 @@ class TemplateTest extends TestCase {
 	 * test to bindings template-processor
 	 */
 	public function testBindingProcessor() {
-		$processor = new Bindings();
+		$processor = new Processor\Bindings();
 		$input     = '{{ test }} works';
 
 		$output = $processor->replace($input, []);
@@ -61,7 +59,7 @@ class TemplateTest extends TestCase {
 	 * test to implode template-processor
 	 */
 	public function testImplodeProcessor() {
-		$processor = new Implode();
+		$processor = new Processor\Implode();
 
 		$input  = '{{ array | implode(" ") }} yay';
 		$output = $processor->replace($input, ['array' => ['test', 'succeeded']]);
@@ -77,6 +75,30 @@ class TemplateTest extends TestCase {
 		$input  = '{{ array.nested | implode(", ") }} yay';
 		$output = $processor->replace($input, ['array' => ['nested' => ['test', 'succeeded']]]);
 		$this->assertSame('test, succeeded yay', $output);
+	}
+
+	/**
+	 * test to minify html template-processor
+	 */
+	public function testMinifyProcessor() {
+		$processor = new Processor\Minify(Config::getInstance());
+
+		$input = implode(PHP_EOL, [
+			' test ', // leading and trailing whitespaces
+			'   done   ', // multiple whitespaces
+		]);
+		$output = $processor->replace($input);
+		$this->assertSame('test done', $output);
+
+		$input = implode(PHP_EOL, [
+			'test    ',
+			'<a href="#">',
+			'<b>html</b>',
+			'</a>',
+			'<img src="#"    />',
+		]);
+		$output = $processor->replace($input);
+		$this->assertSame('test <a href="#"><b>html</b></a><img src="#" />', $output);
 	}
 
 }

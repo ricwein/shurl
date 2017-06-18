@@ -41,7 +41,7 @@ class Minify extends Worker {
 			return $content;
 		}
 
-		return preg_replace(array_keys(static::REGEX), array_values(static::REGEX), $content);
+		return trim(preg_replace(array_keys(static::REGEX), array_values(static::REGEX), $content));
 	}
 
 }

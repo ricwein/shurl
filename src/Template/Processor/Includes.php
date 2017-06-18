@@ -19,7 +19,9 @@ class Includes extends Functions {
 		// include other template files
 		$content = preg_replace_callback($this->getRegex('include(.*)'), function ($match) use ($currentDepth) {
 			$filecontent = $this->_file->read(trim($match[1], '\'" '), true);
-			if ($currentDepth <= self::MAX_DEPTH) {
+
+			// depth - 2 since we already have the original + current depth
+			if ($currentDepth <= (self::MAX_DEPTH - 2)) {
 				return $this->replace($filecontent, $currentDepth + 1);
 			}
 

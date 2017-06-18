@@ -8,7 +8,6 @@ use ricwein\shurl\Config\Config;
 /**
  * test shurl Config class
  *
- * @author Richard Weinhold
  * @covers Config
  */
 class ConfigTest extends TestCase {

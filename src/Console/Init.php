@@ -37,13 +37,12 @@ class Init extends Command {
 	 * @link http://blog.ostermiller.org/find-comment
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$config = Config::getInstance();
 
 		// override config, to allow using the templating-engine for sql files
-		$config->views = array_replace_recursive($config->views, [
+		$config = Config::getInstance(['views' => [
 			'path'      => 'resources/database/templates',
 			'extension' => '.sql.twig',
-		]);
+		]]);
 
 		// init db-connection
 		$pixie = (new Core($config))->db;

@@ -40,7 +40,14 @@ class Template {
 	 * @throws NotFound
 	 */
 	public function __construct(Config $config, Cache $cache = null) {
-		if (false === $templatePath = realpath(__DIR__ . '/../../' . trim($config->views['path'], '/'))) {
+
+		if (strpos($config->views['path'], '/') === 0) {
+			$templatePath = realpath(rtrim($config->views['path'], '/'));
+		} else {
+			$templatePath = realpath(__DIR__ . '/../../' . trim($config->views['path'], '/'));
+		}
+
+		if (false === $templatePath) {
 			throw new NotFound('template path not found', 404);
 		} elseif (false === $assetPath = realpath(__DIR__ . '/../../' . trim($config->assets['path'], '/'))) {
 			throw new NotFound('assets path not found', 404);
@@ -67,6 +74,7 @@ class Template {
 		if ($this->cache === null) {
 			$content = $this->_load($templateFile, $filter);
 			$content = $this->_populate($content, $bindings);
+			$content = trim($content);
 			return $content;
 		}
 
@@ -87,6 +95,7 @@ class Template {
 		}
 
 		$content = $this->_populate($content, $bindings);
+		$content = trim($content);
 		return $content;
 	}
 
