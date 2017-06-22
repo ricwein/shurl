@@ -75,14 +75,18 @@ class Templater {
 		$protocol = ($this->request->isSecure() ? 'https://' : 'http://');
 		$host     = $this->request->server()->get('SERVER_NAME');
 
+		if ($this->core->config->development && empty($host)) {
+			$host = $this->request->headers()->get('Host');
+		}
+
 		return array_replace_recursive([
 			'wait'   => (int) $this->core->config->redirect['wait'],
 			'config' => $this->core->config->get(),
 			'url'    => [
 				'protocol' => $protocol,
 				'host'     => $host,
-				'base'     => $protocol . $host,
-				'root'     => $this->core->config->rootURL,
+				'base'     => rtrim($protocol . $host, '/'),
+				'root'     => rtrim($this->core->config->rootURL, '/'),
 			],
 		], [
 			'config' => [
@@ -121,7 +125,7 @@ class Templater {
 			throw new NotFound('assets path not found', 404);
 		}
 		$asset  = new File($assetPath, $this->core->config);
-		$parser = new Processor\Assets($asset, $this->core->config);
+		$parser = new Processor\Assets($asset, $this->core->config, $this->core->cache);
 		$styles = $parser->parse($assetName . '.scss', $this->fetchVariables());
 
 		$this->response->body($styles);

@@ -10,13 +10,13 @@ abstract class Functions extends Worker {
 	/**
 	 * @var File
 	 */
-	protected $_file;
+	protected $file;
 
 	/**
 	 * @param File $file
 	 */
 	public function __construct(File $file) {
-		$this->_file = $file;
+		$this->file = $file;
 	}
 
 	/**

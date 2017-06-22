@@ -9,11 +9,12 @@
 {# Base URL to use for all relative URLs contained within the document #}
 <base href="{{ url.base }}">
 
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+<link rel="shortcut icon" href="{{ url.base }}/favicon.ico" />
+<link rel="icon" type="image/png" sizes="64x64" href="{{ url.base }}/favicon.png" />
 
 {% include 'templates/headers/og' %}
 {% include 'templates/headers/twitter' %}
 {% include 'templates/headers/apple' %}
 
+{% asset 'style.fast.scss' | inline %}
 {% asset 'style.scss' %}

@@ -6,6 +6,7 @@ use Leafo\ScssPhp\Compiler;
 use Leafo\ScssPhp\Formatter\Compressed;
 use Leafo\ScssPhp\Formatter\Expanded;
 use ricwein\shurl\Config\Config;
+use ricwein\shurl\Core\Cache;
 use ricwein\shurl\Template\Engine\File;
 use ricwein\shurl\Template\Engine\Functions;
 
@@ -20,12 +21,19 @@ class Assets extends Functions {
 	protected $config;
 
 	/**
+	 * @var Cache|null
+	 */
+	protected $cache;
+
+	/**
 	 * @param File $file
 	 * @param Config $config
+	 * @param Cache|null $cache
 	 */
-	public function __construct(File $file, Config $config) {
+	public function __construct(File $file, Config $config, Cache $cache = null) {
 		parent::__construct($file);
 		$this->config = $config;
+		$this->cache  = $cache;
 	}
 
 	/**
@@ -76,6 +84,36 @@ class Assets extends Functions {
 	 */
 	public function parse(string $filename, array $bindings = []): string {
 
+		if ($this->cache === null) {
+			return $this->parseNew($filename, $bindings);
+		}
+
+		$styleCache = $this->cache->getItem(
+			'stylesheet.' .
+			$this->file->cachePath($filename) .
+			$this->file->hash($filename)
+		);
+
+		if (null === $stylesheet = $styleCache->get()) {
+
+			// load template from file
+			$stylesheet = $this->parseNew($filename, $bindings);
+
+			$styleCache->set($stylesheet);
+			$styleCache->expiresAfter($this->config->assets['expires']);
+			$this->cache->save($styleCache);
+		}
+
+		return $stylesheet;
+	}
+
+	/**
+	 * @param string $filename
+	 * @param array $bindings
+	 * @return string
+	 */
+	protected function parseNew(string $filename, array $bindings = []): string {
+
 		/**
 		 * @var Compiler
 		 */
@@ -88,7 +126,7 @@ class Assets extends Functions {
 		if ($compiler === null) {
 
 			$compiler = new Compiler();
-			$compiler->setImportPaths($this->_file->getBasepath());
+			$compiler->setImportPaths($this->file->getBasepath());
 
 			if ($this->config->development) {
 				$compiler->setFormatter(new Expanded());
@@ -98,10 +136,11 @@ class Assets extends Functions {
 		}
 
 		$compiler->setVariables($bindings);
-		$compiler->addImportPath($this->_file->fullPath($filename, true));
+		$compiler->addImportPath($this->file->fullPath($filename, true));
 
-		$filecontent = $this->_file->read($filename, true);
+		$filecontent = $this->file->read($filename, true);
 		return $compiler->compile($filecontent);
+
 	}
 
 }

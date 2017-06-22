@@ -96,10 +96,10 @@ class File {
 	 * @throws \UnexpectedValueException
 	 */
 	public function cachePath(string $filename): string{
-		$path = $this->_basepath . $this->path($filename);
+		$path = $this->path($filename);
 		return str_replace(
 			['{', '}', '(', ')', '/', '\\', '@', ':'],
-			['|', '|', '|', '|', '.', '.', '-', '_'],
+			['.', '.', '.', '.', '.', '.', '.', '.'],
 			$path
 		);
 	}

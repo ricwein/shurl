@@ -79,7 +79,7 @@ class Template {
 		}
 
 		$templateCache = $this->cache->getItem(
-			'template_' .
+			'view.' .
 			$this->template->cachePath($templateFile) .
 			$this->template->hash($templateFile)
 		);
@@ -128,7 +128,7 @@ class Template {
 	 */
 	protected function _populate(string $content, array $bindings): string{
 		$content = (new Processor\Implode())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
-		$content = (new Processor\Assets($this->asset, $this->config))->replace($content, array_replace_recursive($bindings, (array) $this->config->assets['variables']));
+		$content = (new Processor\Assets($this->asset, $this->config, $this->cache))->replace($content, array_replace_recursive($bindings, (array) $this->config->assets['variables']));
 		$content = (new Processor\Bindings())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
 		$content = (new Processor\Minify($this->config))->replace($content);
 		return $content;

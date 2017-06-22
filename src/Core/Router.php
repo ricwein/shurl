@@ -61,7 +61,7 @@ class Router {
 
 		// show welcome page as default
 		$klein->respond('/', function (Request $request, Response $response, ServiceProvider $service, App $app) {
-			$app->templater->welcome($app->core->getURLCount());
+			$app->templater->welcome($app->core->getUrlCount());
 		});
 
 		// match and preview slugs

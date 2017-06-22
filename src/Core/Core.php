@@ -83,7 +83,7 @@ class Core {
 
 		$rewrite = new Rewrite($this->config, $url, $response);
 		switch ($url->mode()) {
-			case 'passthrough':$rewrite->passthrough($this->config->cache['passthrough'] ? $this->cache : null);
+			case 'passthrough':$rewrite->passthrough($this->config->redirect['cachePassthrough'] ? $this->cache : null);
 			case 'redirect':$rewrite->rewrite($this->config->redirect['permanent'] && !$this->config->development);
 			default:throw new \UnexpectedValueException(sprintf('invalid redirect mode \'%s\'', $url->mode()), 500);
 		}
@@ -109,16 +109,16 @@ class Core {
 	/**
 	 * @return int
 	 */
-	public function getURLCount(): int {
+	public function getUrlCount(): int {
 
 		if ($this->cache === null) {
-			return $this->countURLs();
+			return $this->countUrls();
 		}
 
 		$countCache = $this->cache->getItem('count');
 
 		if (null === $count = $countCache->get()) {
-			$count = $this->countURLs();
+			$count = $this->countUrls();
 			$countCache->set($count);
 			$countCache->expiresAfter(60);
 			$this->cache->save($countCache);
@@ -130,7 +130,7 @@ class Core {
 	/**
 	 * @return int
 	 */
-	protected function countURLs(): int{
+	protected function countUrls(): int{
 		$query = $this->db->table('redirects');
 		$query->select([$query->raw('COUNT(*) as count')]);
 		$now = new \DateTime();
@@ -295,11 +295,11 @@ class Core {
 		$schema = ($request->isSecure() ? 'https' : 'http');
 
 		if (false === $host = $request->server()->get('HTTP_HOST', false)) {
-			return $this->config->rootURL;
+			return rtrim($this->config->rootURL, '/');
 		}
 
 		if (false === $path = $request->server()->get('REQUEST_URI', false)) {
-			return $this->config->rootURL;
+			return rtrim($this->config->rootURL, '/');
 		}
 
 		$host = rtrim($host, '/');

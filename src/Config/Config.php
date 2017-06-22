@@ -66,29 +66,30 @@ class Config {
 
 			// use http status code 301 (permanent) or 302 for redirects?
 			// Clients will only tracked first time visiting the url, with permanent active!
-			'permanent' => false,
+			'permanent'        => false,
 
 			// wait timeout for redirect-methods like html-refresh, which supports this
-			'wait'      => 1,
+			'wait'             => 1,
+
+			'cachePassthrough' => true,
 		],
 
 		'cache'           => [
-			'enabled'     => true,
-			'engine'      => 'auto',
-			'duration'    => 3600, // 1h
-			'prefix'      => '',
-			'passthrough' => true,
-			'config'      => [
-				'path'     => __DIR__ . '/../../cache/',
-				'memcache' => [],
-				'redis'    => [],
+			'enabled'  => true,
+			'engine'   => 'auto', // phpFastCache driver
+			'duration' => 3600, // default duration: 1h
+			'prefix'   => '',
+			'config'   => [
+				'path'     => __DIR__ . '/../../cache/', // path for filecache
+				'memcache' => [], // memcache configuration, see phpFastCache
+				'redis'    => [], // redis configuration, see phpFastCache
 			],
 		],
 
 		'tracking'        => [
 			'enabled'     => true,
 			'respectDNT'  => true,
-			'skipOnError' => true,
+			'skipOnError' => true, // if burstMode is enabled, caching is used on errors
 			'store'       => [
 				'ip'        => true,
 				'userAgent' => true,
