@@ -1,7 +1,6 @@
 # Before Script
 before_script:
     - cat config/example.config.yml > config/config.yml
-    - composer install
 
 stages:
     - lint
