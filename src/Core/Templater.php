@@ -57,6 +57,10 @@ class Templater {
      * @return void
      */
     public function view(string $templateFile, $bindings = [], callable $filter = null) {
+        if ($this->response->isLocked()) {
+            return;
+        }
+
         $template = new Template($this->core->config, $this->core->cache);
 
         $content = $template->make($templateFile, array_replace_recursive($this->fetchVariables(), [
@@ -103,6 +107,9 @@ class Templater {
      * @return void
      */
     public function error(\Throwable $throwable) {
+        if ($this->response->isLocked()) {
+            return;
+        }
 
         // disguise database-exception to prevent credential-leaking messages
         if ($throwable instanceof \PDOException) {
@@ -124,6 +131,10 @@ class Templater {
      * @return void
      */
     public function asset(string $assetName) {
+        if ($this->response->isLocked()) {
+            return;
+        }
+
         if (strpos($this->core->config->assets['path'], '/') === 0) {
             $assetPath = realpath(rtrim($this->core->config->assets['path'], '/'));
         } else {

@@ -91,12 +91,10 @@ class Config {
             'engine'   => 'auto', // phpFastCache driver
             'fallback' => 'file',
             'duration' => 3600, // default duration: 1h
-            'prefix'   => '',
-            'config'   => [
-                'path'     => '@cache/cache/', // path for filecache
-                'memcache' => [], // memcache configuration, see phpFastCache
-                'redis'    => [], // redis configuration, see phpFastCache
-            ],
+            'prefix'   => null,
+            'path'     => '@cache/cache/', // path for filecache
+            'memcache' => [], // memcache configuration, see phpFastCache
+            'redis'    => [], // redis configuration, see phpFastCache
         ],
 
         'tracking'        => [

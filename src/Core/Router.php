@@ -43,12 +43,14 @@ class Router {
     public function dispatch() {
         $klein = new Klein();
 
-        $klein->respond(function (Request $request, Response $response, ServiceProvider $service, App $app) use ($klein) {
+        // prepare routing
+        $klein->respond(function (Request $request, Response $response, ServiceProvider $service, App $app, Klein $klein) {
 
             // lazy load shurl core and templater
             $app->register('core', function () {
                 return new Core($this->config);
             });
+
             $app->register('templater', function () use ($app, $request, $response) {
                 return new Templater($app->core, $request, $response);
             });
@@ -80,10 +82,10 @@ class Router {
             $url = $app->core->getUrl($request->slug);
             $app->core->track($url, $request);
 
-            $response->json([
+            $response->json([[
                 'slug'     => $url->slug,
                 'original' => $url->original,
-            ]);
+            ]]);
             exit(0);
         });
 

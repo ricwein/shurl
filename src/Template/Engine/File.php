@@ -93,20 +93,6 @@ class File {
     }
 
     /**
-     * @param  string                    $filename
-     * @throws \UnexpectedValueException
-     * @return string
-     */
-    public function cachePath(string $filename): string {
-        $path = $this->path($filename);
-        return str_replace(
-            ['{', '}', '(', ')', '/', '\\', '@', ':'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            $path
-        );
-    }
-
-    /**
      * @param  string $filename
      * @return string
      */

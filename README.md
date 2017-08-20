@@ -81,8 +81,8 @@ There are several different routes, which are supported by shurl.
 - **/api/<i>{slug}</i>** exposes a simple JSON api (`GET` Method), which provides access to the resolved URL
 
 ```json
-{
+[{
 	"slug": "shurl",
 	"original": "https:\/\/s.ricwein.com"
-}
+}]
 ```

@@ -41,7 +41,7 @@ class Cache {
      * @param array  $config
      */
     public function __construct(string $engine, array $config) {
-        if (isset($config['prefix'])) {
+        if (isset($config['prefix']) && $config['prefix'] !== null) {
             $this->setPrefix($config['prefix']);
         }
 
@@ -101,7 +101,11 @@ class Cache {
      * @return string
      */
     protected function prefixString(string $key): string {
-        return $this->_prefix . $key;
+        return $this->_prefix . str_replace(
+            ['{', '}', '(', ')', '/', '\\', '@', ':'],
+            ['|', '|', '|', '|', '.', '.', '-', '_'],
+            $key
+        );
     }
 
     /**

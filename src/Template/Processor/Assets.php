@@ -90,7 +90,7 @@ class Assets extends Functions {
 
         $styleCache = $this->cache->getItem(
             'stylesheet.' .
-            $this->file->cachePath($filename) .
+            $this->file->path($filename) .
             $this->file->hash($filename)
         );
 

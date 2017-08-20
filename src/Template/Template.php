@@ -87,7 +87,7 @@ class Template {
 
         $templateCache = $this->cache->getItem(
             'view.' .
-            $this->template->cachePath($templateFile) .
+            $this->template->path($templateFile) .
             $this->template->hash($templateFile)
         );
 

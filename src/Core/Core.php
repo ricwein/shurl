@@ -61,14 +61,13 @@ class Core {
         }
 
         if ($this->config->cache['enabled']) {
-            $this->cache = new Cache($this->config->cache['engine'], $this->config->cache['config']);
-            $this->cache->setPrefix($this->config->cache['prefix']);
+            $this->cache = new Cache($this->config->cache['engine'], $this->config->cache);
         }
 
         // init new monolog logger
         $this->logger = new Logger($this->config->name);
         $this->logger->pushHandler(new StreamHandler(
-            __DIR__ . '/../../' . ltrim($this->config->log['path'], '/'),
+            $this->config->log['path'],
             $this->config->log['severity']
         ));
 
@@ -237,11 +236,7 @@ class Core {
         }
 
         // try a cache lookup first
-        $urlCache = $this->cache->getItem('slug_' . str_replace(
-            ['{', '}', '(', ')', '/', '\\', '@', ':'],
-            ['|', '|', '|', '|', '.', '.', '-', '_'],
-            $slug
-        ));
+        $urlCache = $this->cache->getItem('slug_' . $slug);
 
         if (null === $url = $urlCache->get()) {
             // fetch entry from db, and safe in cache
