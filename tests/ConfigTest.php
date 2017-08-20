@@ -1,4 +1,4 @@
-<?php declare (strict_types = 1);
+<?php declare(strict_types = 1);
 
 namespace tests;
 
@@ -11,35 +11,33 @@ use ricwein\shurl\Config\Config;
  * @covers Config
  */
 class ConfigTest extends TestCase {
+    /**
+     * test config getters and setters
+     */
+    public function testSetter() {
+        $config = Config::getInstance();
 
-	/**
-	 * test config getters and setters
-	 */
-	public function testSetter() {
-		$config = Config::getInstance();
+        $this->assertInternalType('array', $config->get());
 
-		$this->assertTrue(is_array($config->get()));
+        $config->name = 'shurl';
+        $this->assertSame('shurl', $config->name);
 
-		$config->name = 'shurl';
-		$this->assertSame('shurl', $config->name);
+        $config->name = 'test';
+        $this->assertSame('test', $config->name);
+    }
 
-		$config->name = 'test';
-		$this->assertSame('test', $config->name);
-	}
+    /**
+     * testing config singleton usage
+     */
+    public function testSingleton() {
+        $config = Config::getInstance(['unittest' => true]);
+        $this->assertSame(true, $config->unittest);
 
-	/**
-	 * testing config singleton usage
-	 */
-	public function testSingleton() {
-		$config = Config::getInstance(['unittest' => true]);
-		$this->assertSame(true, $config->unittest);
+        $config = Config::getInstance();
+        $this->assertSame(true, $config->unittest);
+        $config->unittest = ['yay'];
 
-		$config = Config::getInstance();
-		$this->assertSame(true, $config->unittest);
-		$config->unittest = ['yay'];
-
-		$config = Config::getInstance();
-		$this->assertSame(['yay'], $config->unittest);
-	}
-
+        $config = Config::getInstance();
+        $this->assertSame(['yay'], $config->unittest);
+    }
 }

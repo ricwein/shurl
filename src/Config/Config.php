@@ -1,8 +1,13 @@
 <?php
-
+/**
+ * @author Richard Weinhold
+ */
 namespace ricwein\shurl\Config;
 
 use Monolog\Logger;
+
+use ricwein\shurl\Core\Helper;
+
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -10,203 +15,275 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Config {
 
-	/**
-	 * @var self|null
-	 */
-	static private $__instance = null;
+    /**
+     * @var self|null
+     */
+    private static $__instance = null;
 
-	/**
-	 * default configuration
-	 * @var array
-	 */
-	private $__config = [
-		'name'            => 'shurl',
-		'development'     => false,
+    /**
+     * default configuration
+     * @var array
+     */
+    private $__config = [
+        'name'            => 'shurl',
+        'development'     => false,
 
-		'configFiles'     => [
-			'config.yml',
-			'database.yml',
-		],
+        'imports'         => [
+            ['resource' => 'config.yml'],
+        ],
 
-		'database'        => [
-			'database'  => 'shurl',
-			'username'  => 'shurl',
-			'password'  => '',
-			'prefix'    => '',
+        'database'        => [
+            'database'  => 'shurl',
+            'username'  => 'shurl',
+            'password'  => '',
+            'prefix'    => '',
 
-			'host'      => '127.0.0.1',
-			'driver'    => 'mysql',
-			'charset'   => 'utf8mb4',
-			'collation' => 'utf8mb4_unicode_ci',
-		],
+            'host'      => '127.0.0.1',
+            'driver'    => 'mysql',
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ],
 
-		'log'             => [
-			'path'     => 'logs/error.log',
-			'severity' => Logger::WARNING, // 300
-		],
+        'paths'           => [
+            'log'    => '/logs',
+            'cache'  => '/cache',
+            'view'   => '/views',
+            'asset'  => '/assets',
+            'config' => '/config',
+        ],
 
-		'rootURL'         => 'localhost',
-		'timestampFormat' => [
-			'database' => 'Y-m-d H:i:s',
-		],
+        'log'             => [
+            'path'     => '@log/error.log',
+            'severity' => Logger::WARNING, // 300
+        ],
 
-		'urls'            => [
-			'alphabet' => 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ0123456789',
-			'hash'     => 'sha256',
-			'salt'     => '',
+        'rootURL'         => 'localhost',
+        'timestampFormat' => [
+            'database' => 'Y-m-d H:i:s',
+        ],
 
-			// reserved paths (slugs)
-			'reserved' => [
-				'assets', 'images', // frontend ressources
-				'api', 'preview', // shurl features
-			],
-		],
+        'urls'            => [
+            'alphabet' => 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ0123456789',
+            'hash'     => 'sha256',
+            'salt'     => '',
 
-		'redirect'        => [
+            // reserved paths (slugs)
+            'reserved' => [
+                'assets', 'images', // frontend ressources
+                'api', 'preview', // shurl features
+            ],
+        ],
 
-			// use http status code 301 (permanent) or 302 for redirects?
-			// Clients will only tracked first time visiting the url, with permanent active!
-			'permanent'        => false,
+        'redirect'        => [
 
-			// wait timeout for redirect-methods like html-refresh, which supports this
-			'wait'             => 1,
+            // use http status code 301 (permanent) or 302 for redirects?
+            // Clients will only tracked first time visiting the url, with permanent active!
+            'permanent'        => false,
 
-			'cachePassthrough' => true,
-		],
+            // wait timeout for redirect-methods like html-refresh, which supports this
+            'wait'             => 1,
 
-		'cache'           => [
-			'enabled'  => true,
-			'engine'   => 'auto', // phpFastCache driver
-			'duration' => 3600, // default duration: 1h
-			'prefix'   => '',
-			'config'   => [
-				'path'     => __DIR__ . '/../../cache/', // path for filecache
-				'memcache' => [], // memcache configuration, see phpFastCache
-				'redis'    => [], // redis configuration, see phpFastCache
-			],
-		],
+            'cachePassthrough' => true,
+        ],
 
-		'tracking'        => [
-			'enabled'     => true,
-			'respectDNT'  => true,
-			'skipOnError' => true, // if burstMode is enabled, caching is used on errors
-			'store'       => [
-				'ip'        => true,
-				'userAgent' => true,
-				'referrer'  => true,
-			],
-		],
+        'cache'           => [
+            'enabled'  => true,
+            'engine'   => 'auto', // phpFastCache driver
+            'fallback' => 'file',
+            'duration' => 3600, // default duration: 1h
+            'prefix'   => '',
+            'config'   => [
+                'path'     => '@cache/cache/', // path for filecache
+                'memcache' => [], // memcache configuration, see phpFastCache
+                'redis'    => [], // redis configuration, see phpFastCache
+            ],
+        ],
 
-		'views'           => [
-			'path'           => 'views/',
-			'extension'      => '.html.twig',
-			'variables'      => [],
-			'useFileHash'    => 'md5', // false or hash method as string
-			'removeComments' => true,
-			'route'          => [
-				'error'    => 'pages/error',
-				'welcome'  => 'pages/welcome',
-				'redirect' => 'pages/redirect',
-				'preview'  => 'pages/preview',
-			],
-			'expires'        => 604800, // 1w
-		],
+        'tracking'        => [
+            'enabled'     => true,
+            'respectDNT'  => true,
+            'skipOnError' => true, // skip tracking if writing to db fails
+            'store'       => [
+                'ip'        => true,
+                'userAgent' => true,
+                'referrer'  => true,
+            ],
+        ],
 
-		'assets'          => [
-			'path'      => 'assets/',
-			'variables' => [
-				'color-accent' => '#28aae1',
-			],
-			'inline'    => false,
-			'expires'   => 604800, // 1w
-		],
-	];
+        'views'           => [
+            'path'           => '@view',
+            'extension'      => '.html.twig',
+            'variables'      => [],
+            'useFileHash'    => 'md5', // false or hash method as string
+            'removeComments' => true,
+            'route'          => [
+                'error'    => 'pages/error',
+                'welcome'  => 'pages/welcome',
+                'redirect' => 'pages/redirect',
+                'preview'  => 'pages/preview',
+            ],
+            'expires'        => 604800, // 1w
+        ],
 
-	/**
-	 * provide singleton access to configurations
-	 * @param array|null $override
-	 * @return self
-	 */
-	public static function getInstance(array $override = null): self {
-		if (static::$__instance === null) {
-			static::$__instance = new static();
-		}
-		if ($override !== null) {
-			static::$__instance->set($override);
-		}
-		return static::$__instance;
-	}
+        'assets'          => [
+            'path'      => '@asset',
+            'variables' => [
+                'color-accent' => '#28aae1',
+            ],
+            'inline'    => false,
+            'expires'   => 604800, // 1w
+        ],
+    ];
 
-	/**
-	 * init new config object
-	 */
-	private function __construct() {
+    /**
+     * @var array|null
+     */
+    private $paths = null;
 
-		$this->_loadConfigFiles();
+    /**
+     * provide singleton access to configurations
+     * @param  array|null $override
+     * @return self
+     */
+    public static function getInstance(array $override = null): self {
+        if (static::$__instance === null) {
+            static::$__instance = new static();
+        }
+        if ($override !== null) {
+            static::$__instance->set($override);
+        }
+        return static::$__instance;
+    }
 
-	}
+    /**
+     * init new config object
+     */
+    private function __construct() {
+        $this->loadConfigFiles($this->__config['imports']);
+        $this->resolvePaths();
+    }
 
-	/**
-	 * load configuration from files
-	 * @return self
-	 */
-	protected function _loadConfigFiles() {
-		foreach ($this->__config['configFiles'] as $file) {
-			$path = __DIR__ . '/../../config/' . $file;
+    /**
+     * load configuration from files
+     * @param  array $importList
+     * @param  array $loaded
+     * @return self
+     */
+    protected function loadConfigFiles(array $importList, array $loaded = []) {
+        foreach ($importList as $import) {
+            if (!is_array($import) || !isset($import['resource'])) {
+                continue;
+            }
 
-			if (file_exists($path) && is_readable($path)) {
-				$fileConfig     = Yaml::parse(file_get_contents($path));
-				$this->__config = array_replace_recursive($this->__config, $fileConfig);
-			}
-		}
+            $path = $this->resolvePath($import['resource'], __DIR__ . '/../../config/');
 
-		return $this;
-	}
+            if ($path !== false && !in_array($path, $loaded, true) && file_exists($path) && is_readable($path)) {
+                $fileConfig     = Yaml::parse(file_get_contents($path));
+                $this->__config = array_replace_recursive($this->__config, $fileConfig);
 
-	/**
-	 * @param string $name
-	 * @return mixed
-	 */
-	public function get(string $name = null) {
-		if ($name === null) {
-			return $this->__config;
-		} elseif (array_key_exists($name, $this->__config)) {
-			return $this->__config[$name];
-		}
-		return null;
-	}
+                if (isset($fileConfig['paths'])) {
+                    $this->paths = null;
+                }
 
-	/**
-	 * @param  array $config
-	 * @return self
-	 */
-	public function set(array $config) {
-		$this->__config = array_replace_recursive($this->__config, $config);
-		return $this;
-	}
+                if (isset($fileConfig['imports'])) {
+                    $this->loadConfigFiles($fileConfig['imports'], $loaded);
+                }
 
-	/**
-	 * @param string $name
-	 * @return mixed
-	 */
-	public function __get(string $name) {
-		return $this->get($name);
-	}
+                $loaded[] = $path;
+            }
+        }
 
-	/**
-	 * @param  string $name
-	 * @param  mixed $value
-	 */
-	public function __set(string $name, $value) {
-		$this->__config[$name] = $value;
-	}
+        return $this;
+    }
 
-	/**
-	 * @param string $name
-	 * @return bool
-	 */
-	public function __isset(string $name): bool {
-		return array_key_exists($name, $this->__config);
-	}
+    /**
+     * @param  string|null $relativePath
+     * @return void
+     */
+    protected function resolvePaths(string $relativePath = null) {
+        $this->__config = Helper::array_map_recursive(function ($item) {
+            return is_string($item) ? strtr($item, $this->getPaths()) : $item;
+        }, $this->__config);
+    }
 
+    /**
+     * @param  string      $filepath
+     * @param  string|null $relativePath
+     * @return string|null
+     */
+    protected function resolvePath(string $filepath, string $relativePath = null) {
+        $filepath = strtr($filepath, $this->getPaths());
+
+        if (strpos($filepath, '/') === 0 && false !== $resolved = realpath($filepath)) {
+            return $resolved;
+        } elseif (strpos($filepath, '/') === 0) {
+            return realpath(__DIR__ . '/../../' . ltrim($filepath, '/'));
+        } elseif ($relativePath !== null) {
+            return realpath($relativePath . ltrim($filepath, '/'));
+        }
+
+        return $filepath;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getPaths(): array {
+        if ($this->paths === null) {
+            $this->paths = [];
+
+            foreach ($this->get('paths') as $key => $path) {
+                $this->paths['@' . $key] = realpath(__DIR__ . '/../../' . ltrim($path, '/')) . '/';
+            }
+        }
+
+        return $this->paths;
+    }
+
+    /**
+     * @param  string|null $name
+     * @return mixed|null
+     */
+    public function get(string $name = null) {
+        if ($name === null) {
+            return $this->__config;
+        } elseif (array_key_exists($name, $this->__config)) {
+            return $this->__config[$name];
+        }
+        return null;
+    }
+
+    /**
+     * @param  array $config
+     * @return self
+     */
+    public function set(array $config) {
+        $this->__config = array_replace_recursive($this->__config, $config);
+        return $this;
+    }
+
+    /**
+     * @param  string     $name
+     * @return mixed|null
+     */
+    public function __get(string $name) {
+        return $this->get($name);
+    }
+
+    /**
+     * @param  string $name
+     * @param  mixed  $value
+     * @return void
+     */
+    public function __set(string $name, $value) {
+        $this->__config[$name] = $value;
+    }
+
+    /**
+     * @param  string $name
+     * @return bool
+     */
+    public function __isset(string $name): bool {
+        return array_key_exists($name, $this->__config);
+    }
 }

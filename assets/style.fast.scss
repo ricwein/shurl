@@ -3,11 +3,12 @@
 
 body {
 	background-color: $color-background;
-	color: $color-foreground;
 	padding-top: floor($page-height / 4);
+	font-size: .9em;
 }
 
 .container {
+	color: $color-foreground;
 	margin: 0 auto;
 	min-width: 30%;
 	width: $page-width;

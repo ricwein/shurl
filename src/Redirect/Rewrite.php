@@ -1,8 +1,11 @@
 <?php
-
+/**
+ * @author Richard Weinhold
+ */
 namespace ricwein\shurl\Redirect;
 
 use Klein\Response;
+
 use ricwein\shurl\Config\Config;
 use ricwein\shurl\Core\Cache;
 
@@ -11,146 +14,147 @@ use ricwein\shurl\Core\Cache;
  */
 class Rewrite {
 
-	/**
-	 * @var string[]
-	 */
-	const MODES = ['redirect', 'html', 'passthrough'];
+    /**
+     * @var string[]
+     */
+    const MODES = ['redirect', 'html', 'passthrough'];
 
-	/**
-	 * @var Config
-	 */
-	protected $config;
+    /**
+     * @var Config
+     */
+    protected $config;
 
-	/**
-	 * @var URL
-	 */
-	protected $url;
+    /**
+     * @var URL
+     */
+    protected $url;
 
-	/**
-	 * @var Response
-	 */
-	protected $response;
+    /**
+     * @var Response
+     */
+    protected $response;
 
-	/**
-	 * @param Config $config
-	 * @param URL $url
-	 * @param Response $response
-	 */
-	public function __construct(Config $config, URL $url, Response $response) {
-		$this->config   = $config;
-		$this->url      = $url;
-		$this->response = $response;
-	}
+    /**
+     * @param Config   $config
+     * @param URL      $url
+     * @param Response $response
+     */
+    public function __construct(Config $config, URL $url, Response $response) {
+        $this->config   = $config;
+        $this->url      = $url;
+        $this->response = $response;
+    }
 
-	/**
-	 * send redirect header
-	 *
-	 * this ends the current code execution!
-	 * @param bool $permanent
-	 * @return void
-	 */
-	public function rewrite(bool $permanent = false) {
+    /**
+     * send redirect header
+     *
+     * this ends the current code execution!
+     * @param  bool $permanent
+     * @return void
+     */
+    public function rewrite(bool $permanent = false) {
+        if ($permanent) {
+            $this->response->status()->setCode(301);
+            $this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+        } else {
+            $this->response->status()->setCode(302);
+            $this->response->header('Pragma', 'no-cache');
+            $this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $this->response->header('Expires', '0');
+        }
 
-		if ($permanent) {
+        $this->response->header('Location', $this->url->original);
+        $this->response->send();
 
-			$this->response->status()->setCode(301);
-			$this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+        exit(0);
+    }
 
-		} else {
+    /**
+     * allows server-side originURL fetching
+     * and direct rendering to client, without redirection
+     * @param  Cache|null $cache
+     * @return void
+     */
+    public function passthrough(Cache $cache = null) {
 
-			$this->response->status()->setCode(302);
-			$this->response->header('Pragma', 'no-cache');
-			$this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-			$this->response->header('Expires', '0');
-		}
+        // list of headers which should be keept while passthrough
+        $passthroughHeaders = array_flip([
+            'Content-Type', 'Content-Length', 'ETag', 'Last-Modified',
+        ]);
 
-		$this->response->header('Location', $this->url->original);
-		$this->response->send();
+        if ($cache === null) {
 
-		exit(0);
-	}
+            // fetch original header, but only re-set selected
+            $headers = array_intersect_key(static::getHeaders($this->url->original, 1), $passthroughHeaders);
+            foreach ($headers as $key => $value) {
+                $this->response->header($key, $value);
+            }
 
-	/**
-	 * allows server-side originURL fetching
-	 * and direct rendering to client, without redirection
-	 * @param Cache|null $cache
-	 * @return void
-	 */
-	public function passthrough(Cache $cache = null) {
+            // set cache-control for permanent files
+            if (!$this->config->redirect['permanent']) {
+                $this->response->header('Pragma', 'no-cache');
+                $this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+                $this->response->header('Expires', '0');
+            } else {
+                $this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+            }
 
-		// list of headers which should be keept while passthrough
-		$passthroughHeaders = array_flip([
-			'Content-Type', 'Content-Length', 'ETag', 'Last-Modified',
-		]);
+            // since we don't want to cache here, we directly print read lines
+            readfile($this->url->original);
 
-		if ($cache === null) {
+            exit(0);
+        }
 
-			// fetch original header, but only re-set selected
-			$headers = array_intersect_key(static::getHeaders($this->url->original, 1), $passthroughHeaders);
-			foreach ($headers as $key => $value) {
-				$this->response->header($key, $value);
-			}
+        $contentCache = $cache->getItem('url_' . $this->url->hash());
+        if (null === $ressource = $contentCache->get()) {
 
-			// set cache-control for permanent files
-			if (!$this->config->redirect['permanent']) {
-				$this->response->header('Pragma', 'no-cache');
-				$this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-				$this->response->header('Expires', '0');
-			} else {
-				$this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
-			}
+            // fetch orignal headers and content
+            $ressource = [
+                'headers' => array_intersect_key(static::getHeaders($this->url->original, 1), $passthroughHeaders),
+                'content' => file_get_contents($this->url->original),
+            ];
 
-			// since we don't want to cache here, we directly print read lines
-			readfile($this->url->original);
+            $contentCache->set($ressource);
+            $contentCache->expiresAfter($this->config->cache['duration']);
+            $cache->save($contentCache);
+        }
 
-			exit(0);
-		}
+        // fetch original header, but only re-set selected
+        $headers = array_intersect_key($ressource['headers'], $passthroughHeaders);
+        foreach ($headers as $key => $value) {
+            $this->response->header($key, $value);
+        }
 
-		$contentCache = $cache->getItem('url_' . $this->url->hash());
-		if (null === $ressource = $contentCache->get()) {
+        if (!$this->config->redirect['permanent']) {
+            $this->response->header('Pragma', 'no-cache');
+            $this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $this->response->header('Expires', '0');
+        } else {
+            $this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
+        }
 
-			// fetch orignal headers and content
-			$ressource = [
-				'headers' => array_intersect_key(static::getHeaders($this->url->original, 1), $passthroughHeaders),
-				'content' => file_get_contents($this->url->original),
-			];
+        $this->response->body($ressource['content']);
+        $this->response->send();
 
-			$contentCache->set($ressource);
-			$contentCache->expiresAfter($this->config->cache['duration']);
-			$cache->save($contentCache);
-		}
+        exit(0);
+    }
 
-		// fetch original header, but only re-set selected
-		$headers = array_intersect_key($ressource['headers'], $passthroughHeaders);
-		foreach ($headers as $key => $value) {
-			$this->response->header($key, $value);
-		}
+    /**
+     * @param  string $url
+     * @return array
+     */
+    protected static function getHeaders(string $url): array {
+        $headers = get_headers($url, 1);
 
-		if (!$this->config->redirect['permanent']) {
-			$this->response->header('Pragma', 'no-cache');
-			$this->response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-			$this->response->header('Expires', '0');
-		} else {
-			$this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
-		}
+        if (!$headers) {
+            return [];
+        }
 
-		$this->response->body($ressource['content']);
-		$this->response->send();
-
-		exit(0);
-	}
-
-	/**
-	 * @param string $url
-	 * @return array
-	 */
-	protected static function getHeaders(string $url): array{
-		$headers = get_headers($url, 1);
-		foreach ($headers as &$value) {
-			if (is_array($value)) {
-				$value = reset($value);
-			}
-		}
-		return $headers;
-	}
+        foreach ($headers as &$value) {
+            if (is_array($value)) {
+                $value = reset($value);
+            }
+        }
+        return $headers;
+    }
 }

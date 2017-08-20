@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @author Richard Weinhold
+ */
 namespace ricwein\shurl\Template\Engine;
 
 /**
@@ -7,9 +9,8 @@ namespace ricwein\shurl\Template\Engine;
  */
 abstract class Variables extends Worker {
 
-	/**
-	 * @var string[]
-	 */
-	const REGEX = ['/\{\{\s*', '\s*\}\}/'];
-
+    /**
+     * @var string[]
+     */
+    const REGEX = ['/\{\{\s*', '\s*\}\}/'];
 }

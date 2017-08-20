@@ -1,11 +1,13 @@
 @import 'colors';
 @import 'size';
+@import 'prefix';
 
 body {
 	background-color: $color-background;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	min-height: 100%;
 	padding-top: floor($page-height / 4);
+	font-size: .9em;
 }
 
 .container {
@@ -30,7 +32,7 @@ img {
 	&.icon {
 		background-color: $color-accent;
 		border: 5px solid mix($color-accent, invert($color-background), 75%);
-		border-radius: 50%;
+		@include border-radius (50%);
 		box-shadow: 0 0 floor($page-width / 12) transparentize($color-accent, 20%);
 		display: block;
 		height: $icon-size;
@@ -40,18 +42,31 @@ img {
 }
 
 a {
-	border-bottom: 1px solid $color-accent;
-	color: darken($color-foreground, 20%);
-	font-weight: bolder;
+	font-weight: normal;
 	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	@include transition(border-color 0.2s ease-in-out);
+
+	&:hover {
+		border-color: $color-accent;
+	}
 }
 
+a,
 b {
 	color: darken($color-foreground, 20%);
 }
 
 h1 {
-	padding: $padding-size $padding-size floor($padding-size / 4);
+	padding: 0 $padding-size floor($padding-size / 4);
+	margin-bottom: -($padding-size / 3);
+	font-weight: 100;
+	font-size: 3em;
+
+	& > b {
+		font-weight: 150;
+		font-size: 1.2em;
+	}
 }
 
 p {
@@ -64,5 +79,16 @@ p {
 	&:first-of-type {
 		border-top: 1px solid rgba(invert($color-background), .05%);
 		padding-top: floor($padding-size / 4);
+		font-size: 1.1em;
+	}
+
+	&:not(:last-of-type) {
+		padding-bottom: 0;
+		margin-bottom: 0;
+	}
+
+	&:not(:first-of-type) {
+		padding-top: 0;
+		margin-top: 0;
 	}
 }

@@ -1,9 +1,12 @@
 <?php
-
+/**
+ * @author Richard Weinhold
+ */
 namespace ricwein\shurl\Core;
 
 use Klein\Request;
 use Klein\Response;
+
 use ricwein\shurl\Exception\DatabaseUnreachable;
 use ricwein\shurl\Exception\NotFound;
 use ricwein\shurl\Template\Engine\File;
@@ -15,133 +18,139 @@ use ricwein\shurl\Template\Template;
  */
 class Templater {
 
-	/**
-	 * @var Template
-	 */
-	protected $template;
+    /**
+     * @var Template
+     */
+    protected $template;
 
-	/**
-	 * @var Core
-	 */
-	protected $core;
+    /**
+     * @var Core
+     */
+    protected $core;
 
-	/**
-	 * @var Request
-	 */
-	protected $request;
+    /**
+     * @var Request
+     */
+    protected $request;
 
-	/**
-	 * @var Response
-	 */
-	protected $response;
+    /**
+     * @var Response
+     */
+    protected $response;
 
-	/**
-	 * @param Core $core
-	 * @param Request $request
-	 * @param Response $response
-	 */
-	public function __construct(Core $core, Request $request, Response $response) {
-		$this->core     = $core;
-		$this->request  = $request;
-		$this->response = $response;
-	}
+    /**
+     * @param Core     $core
+     * @param Request  $request
+     * @param Response $response
+     */
+    public function __construct(Core $core, Request $request, Response $response) {
+        $this->core     = $core;
+        $this->request  = $request;
+        $this->response = $response;
+    }
 
-	/**
-	 * @param string $templateFile
-	 * @param array|object $bindings
-	 * @param callable|null $filter
-	 * @return void
-	 * @throws \UnexpectedValueException
-	 */
-	public function view(string $templateFile, $bindings = [], callable $filter = null) {
-		$template = new Template($this->core->config, $this->core->cache);
+    /**
+     * @param  string                    $templateFile
+     * @param  array|object              $bindings
+     * @param  callable|null             $filter
+     * @throws \UnexpectedValueException
+     * @return void
+     */
+    public function view(string $templateFile, $bindings = [], callable $filter = null) {
+        $template = new Template($this->core->config, $this->core->cache);
 
-		$content = $template->make($templateFile, array_replace_recursive($this->fetchVariables(), [
-			'assets'   => $this->core->config->assets['variables'],
-			'template' => [
-				'name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->core->config->views['extension'], '', $templateFile), PATHINFO_FILENAME)))),
-			],
-		], (array) $bindings));
+        $content = $template->make($templateFile, array_replace_recursive($this->fetchVariables(), [
+            'assets'   => $this->core->config->assets['variables'],
+            'template' => [
+                'name' => ucfirst(strtolower(str_replace(['_', '.'], ' ', pathinfo(str_replace($this->core->config->views['extension'], '', $templateFile), PATHINFO_FILENAME)))),
+            ],
+        ], (array) $bindings));
 
-		$this->response->body($content);
-	}
+        $this->response->body($content);
+    }
 
-	/**
-	 * fetch and build some default Variables
-	 * for template-binding
-	 * @return array
-	 */
-	protected function fetchVariables(): array{
-		$protocol = ($this->request->isSecure() ? 'https://' : 'http://');
-		$host     = $this->request->server()->get('SERVER_NAME');
+    /**
+     * fetch and build some default Variables
+     * for template-binding
+     * @return array
+     */
+    protected function fetchVariables(): array {
+        $protocol = ($this->request->isSecure() ? 'https://' : 'http://');
+        $host     = $this->request->server()->get('SERVER_NAME');
 
-		if ($this->core->config->development && empty($host)) {
-			$host = $this->request->headers()->get('Host');
-		}
+        if ($this->core->config->development && empty($host)) {
+            $host = $this->request->headers()->get('Host');
+        }
 
-		return array_replace_recursive([
-			'wait'   => (int) $this->core->config->redirect['wait'],
-			'config' => $this->core->config->get(),
-			'url'    => [
-				'protocol' => $protocol,
-				'host'     => $host,
-				'base'     => rtrim($protocol . $host, '/'),
-				'root'     => rtrim($this->core->config->rootURL, '/'),
-			],
-		], [
-			'config' => [
-				'name' => ucfirst(strtolower($this->core->config->name)),
-			],
-		]);
-	}
+        return array_replace_recursive([
+            'wait'   => (int) $this->core->config->redirect['wait'],
+            'config' => $this->core->config->get(),
+            'url'    => [
+                'protocol' => $protocol,
+                'host'     => $host,
+                'base'     => rtrim($protocol . $host, '/'),
+                'root'     => rtrim($this->core->config->rootURL, '/'),
+            ],
+        ], [
+            'config' => [
+                'name' => ucfirst(strtolower($this->core->config->name)),
+            ],
+        ]);
+    }
 
-	/**
-	 * @param \Throwable $throwable
-	 * @return void
-	 */
-	public function error(\Throwable $throwable) {
+    /**
+     * @param  \Throwable $throwable
+     * @return void
+     */
+    public function error(\Throwable $throwable) {
 
-		// disguise database-exception to prevent credential-leaking messages
-		if ($throwable instanceof \PDOException) {
-			$throwable = new DatabaseUnreachable('The Database Server is currently not reachable, please try again later', 503, $throwable);
-		}
+        // disguise database-exception to prevent credential-leaking messages
+        if ($throwable instanceof \PDOException) {
+            $throwable = new DatabaseUnreachable('The Database Server is currently not reachable, please try again later', 503, $throwable);
+        }
 
-		// set http response code from exception
-		$this->response->status()->setCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
+        // set http response code from exception
+        $this->response->status()->setCode($throwable->getCode() > 0 ? (int) $throwable->getCode() : 500);
 
-		$this->view('error', ['exception' => [
-			'type'    => (new \ReflectionClass($throwable))->getShortName(),
-			'code'    => $throwable->getCode(),
-			'message' => $throwable->getMessage(),
-		]]);
-	}
+        $this->view('error', ['exception' => [
+            'type'    => (new \ReflectionClass($throwable))->getShortName(),
+            'code'    => $throwable->getCode(),
+            'message' => $throwable->getMessage(),
+        ]]);
+    }
 
-	/**
-	 * @param string $assetName
-	 * @return void
-	 */
-	public function asset(string $assetName) {
-		if (false === $assetPath = realpath(__DIR__ . '/../../' . trim($this->core->config->assets['path'], '/'))) {
-			throw new NotFound('assets path not found', 404);
-		}
-		$asset  = new File($assetPath, $this->core->config);
-		$parser = new Processor\Assets($asset, $this->core->config, $this->core->cache);
-		$styles = $parser->parse($assetName . '.scss', $this->fetchVariables());
+    /**
+     * @param  string $assetName
+     * @return void
+     */
+    public function asset(string $assetName) {
+        if (strpos($this->core->config->assets['path'], '/') === 0) {
+            $assetPath = realpath(rtrim($this->core->config->assets['path'], '/'));
+        } else {
+            $assetPath = realpath(__DIR__ . '/../../' . trim($this->core->config->assets['path'], '/'));
+        }
 
-		$this->response->body($styles);
-		$this->response->header('Content-Type', 'text/css; charset=utf-8');
-		$this->response->header('Cache-Control', 'max-age=' . $this->core->config->assets['expires']);
-		$this->response->send();
-	}
+        if (false === $assetPath) {
+            throw new NotFound('assets path not found', 404);
+        }
 
-	/**
-	 * @param int $count
-	 * @return void
-	 */
-	public function welcome(int $count) {
-		$this->view('welcome', [
-			'count' => $count,
-		]);
-	}
+        $asset  = new File($assetPath, $this->core->config);
+        $parser = new Processor\Assets($asset, $this->core->config, $this->core->cache);
+        $styles = $parser->parse($assetName . '.scss', $this->fetchVariables());
 
+        $this->response->body($styles);
+        $this->response->header('Content-Type', 'text/css; charset=utf-8');
+        $this->response->header('Cache-Control', 'max-age=' . $this->core->config->assets['expires']);
+        $this->response->send();
+    }
+
+    /**
+     * @param  int  $count
+     * @return void
+     */
+    public function welcome(int $count) {
+        $this->view('welcome', [
+            'count' => $count,
+        ]);
+    }
 }

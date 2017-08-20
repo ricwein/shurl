@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @author Richard Weinhold
+ */
 namespace ricwein\shurl\Template\Engine;
 
 /**
@@ -7,21 +9,20 @@ namespace ricwein\shurl\Template\Engine;
  */
 abstract class Functions extends Worker {
 
-	/**
-	 * @var File
-	 */
-	protected $file;
+    /**
+     * @var File
+     */
+    protected $file;
 
-	/**
-	 * @param File $file
-	 */
-	public function __construct(File $file) {
-		$this->file = $file;
-	}
+    /**
+     * @param File $file
+     */
+    public function __construct(File $file) {
+        $this->file = $file;
+    }
 
-	/**
-	 * @var string[]
-	 */
-	const REGEX = ['/\{%\s*', '\s*%\}/'];
-
+    /**
+     * @var string[]
+     */
+    const REGEX = ['/\{%\s*', '\s*%\}/'];
 }

@@ -1,4 +1,4 @@
-<?php declare (strict_types = 1);
+<?php declare(strict_types = 1);
 
 namespace tests\Template;
 
@@ -13,52 +13,48 @@ use ricwein\shurl\Template\Template;
  * @covers Template
  */
 class TemplateTest extends TestCase {
+    /**
+     * test loading of template files
+     */
+    public function testTemplateLoading() {
+        $config = Config::getInstance(['views' => [
+            'path'  => __DIR__ . '/dummytemplates',
+            'route' => ['routeTest' => 'test'],
+        ]]);
 
-	/**
-	 * test loading of template files
-	 */
-	public function testTemplateLoading() {
+        $engine = new Template($config, null);
 
-		$config = Config::getInstance(['views' => [
-			'path'  => __DIR__ . '/dummytemplates',
-			'route' => ['routeTest' => 'test'],
-		]]);
+        // simple variable parsing
+        $output = $engine->make('test.html.twig', ['test' => ['nested' => 'succeeded']]);
+        $this->assertSame('test succeeded', $output);
 
-		$engine = new Template($config, null);
+        // template extensions
+        $output = $engine->make('test', ['test' => ['nested' => 'succeeded']]);
+        $this->assertSame('test succeeded', $output);
 
-		// simple variable parsing
-		$output = $engine->make('test.html.twig', ['test' => ['nested' => 'succeeded']]);
-		$this->assertSame('test succeeded', $output);
+        // routing
+        $output = $engine->make('routeTest', ['test' => ['nested' => 'succeeded']]);
+        $this->assertSame('test succeeded', $output);
+    }
 
-		// template extensions
-		$output = $engine->make('test', ['test' => ['nested' => 'succeeded']]);
-		$this->assertSame('test succeeded', $output);
+    /**
+     * test recursive loading of template files
+     */
+    public function testTemplateRecursiveLoading() {
+        $config = Config::getInstance(['views' => [
+            'path' => __DIR__ . '/dummytemplates',
+        ]]);
 
-		// routing
-		$output = $engine->make('routeTest', ['test' => ['nested' => 'succeeded']]);
-		$this->assertSame('test succeeded', $output);
-	}
+        $engine = new Template($config, null);
 
-	/**
-	 * test recursive loading of template files
-	 */
-	public function testTemplateRecursiveLoading() {
+        // simple include
+        $output = $engine->make('include', ['test' => ['nested' => 'succeeded']]);
+        $this->assertSame('include test succeeded', $output);
 
-		$config = Config::getInstance(['views' => [
-			'path' => __DIR__ . '/dummytemplates',
-		]]);
-
-		$engine = new Template($config, null);
-
-		// simple include
-		$output = $engine->make('include', ['test' => ['nested' => 'succeeded']]);
-		$this->assertSame('include test succeeded', $output);
-
-		// recursive include with depth canceling
-		$output = $engine->make('recursive');
-		$this->assertTrue(false !== $pos = strpos($output, '{% include \'recursive\' %}'));
-		$output = trim(substr($output, 0, $pos));
-		$this->assertSame(Includes::MAX_DEPTH, substr_count($output, 'recursive') - 1);
-	}
-
+        // recursive include with depth canceling
+        $output = $engine->make('recursive');
+        $this->assertTrue(false !== $pos = strpos($output, '{% include \'recursive\' %}'));
+        $output = trim(substr($output, 0, $pos));
+        $this->assertSame(Includes::MAX_DEPTH, substr_count($output, 'recursive') - 1);
+    }
 }

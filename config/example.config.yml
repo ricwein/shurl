@@ -1,6 +1,8 @@
----
 database:
-    password: secretpw
-    username: notroot
+  password: secretpw
+  username: notroot
+
+imports:
+    - { resource: database.yml }
 
 rootURL: https://fancy.url

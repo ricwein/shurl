@@ -1,0 +1,29 @@
+# Before Script
+before_script:
+    - cat config/example.config.yml > config/config.yml
+    - composer install
+
+stages:
+    - lint
+    - test
+
+# jobs
+Linting:
+    stage: lint
+    script:
+        - find . -type "f" -iname "*.php" ! -path "*/vendor/*" -exec php -l {} \;
+        - php -l bin/shurl
+    tags:
+        - php
+
+Unit Testing:
+    stage: test
+    script:
+        - composer require --dev phpunit/phpunit
+        - vendor/bin/phpunit
+    cache:
+        paths:
+            - vendor/
+    tags:
+        - php
+        - composer

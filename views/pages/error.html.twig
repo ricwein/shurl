@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="de">
-	<head>
-		{% include 'templates/head' %}
-		<meta name="robots" content="noindex,nofollow">
-	</head>
-	<body>
-		<div class="container">
-			<h1><b class="accent">{{ exception.code }}</b> - {{ exception.type }}</h1>
-			<p>{{ exception.message }}</p>
-		</div>
-	</body>
+    <head>
+        {% include 'templates/head' %}
+        <meta name="robots" content="noindex,nofollow">
+    </head>
+    <body>
+        <div class="container">
+            <h1>
+                <b>{{ exception.code }}</b>
+                -
+                {{ exception.type }}
+            </h1>
+            <p>{{ exception.message }}</p>
+            <p>
+                <a href="javascript:window.history.back();">back</a>
+            </p>
+        </div>
+    </body>
 </html>

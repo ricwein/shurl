@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="de">
-	<head>
-		{% include 'templates/head' %}
-		<link rel="canonical" href="{{ redirect.original }}"/>
-		<meta name="robots" content="noindex,nofollow">
-		<meta name="referrer" content="no-referrer">
-	</head>
-	<body>
-		<div class="container">
-			<h1><i class="accent">{{ redirect.slug }}</i> <small>resolves to:</small></h1>
-			<p><a href="{{ redirect.original }}" rel="noreferrer nofollow">{{ redirect.original }}</a></p>
-		</div>
-	</body>
+    <head>
+        {% include 'templates/head' %}
+        <link rel="canonical" href="{{ redirect.original }}"/>
+        <meta name="robots" content="noindex,nofollow">
+        <meta name="referrer" content="no-referrer">
+    </head>
+    <body>
+        <div class="container">
+            <h1>resolving
+            </h1>
+            <p>
+                <b class="accent">{{ redirect.slug }}</b>
+                =>
+                <a href="{{ redirect.original }}" rel="noreferrer nofollow">{{ redirect.original }}</a>
+            </p>
+        </div>
+    </body>
 </html>
