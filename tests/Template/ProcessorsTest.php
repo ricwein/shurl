@@ -11,11 +11,13 @@ use ricwein\shurl\Template\Processor;
  *
  * @covers Processor
  */
-class ProcessorTest extends TestCase {
+class ProcessorTest extends TestCase
+{
     /**
      * test to comment template-processor
      */
-    public function testCommentProcessor() {
+    public function testCommentProcessor()
+    {
         $processor = new Processor\Comments();
         $input     = '{# test #} works';
 
@@ -29,7 +31,8 @@ class ProcessorTest extends TestCase {
     /**
      * test to bindings template-processor
      */
-    public function testBindingProcessor() {
+    public function testBindingProcessor()
+    {
         $processor = new Processor\Bindings();
         $input     = '{{ test }} works';
 
@@ -57,7 +60,8 @@ class ProcessorTest extends TestCase {
     /**
      * test to implode template-processor
      */
-    public function testImplodeProcessor() {
+    public function testImplodeProcessor()
+    {
         $processor = new Processor\Implode();
 
         $input  = '{{ array | implode(" ") }} yay';
@@ -79,7 +83,8 @@ class ProcessorTest extends TestCase {
     /**
      * test to minify html template-processor
      */
-    public function testMinifyProcessor() {
+    public function testMinifyProcessor()
+    {
         $processor = new Processor\Minify(Config::getInstance());
 
         $input = implode(PHP_EOL, [

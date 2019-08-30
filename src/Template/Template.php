@@ -12,7 +12,8 @@ use ricwein\shurl\Template\Engine\File;
 /**
  * simple Template parser with Twig-like syntax
  */
-class Template {
+class Template
+{
 
     /**
      * @var File
@@ -40,7 +41,8 @@ class Template {
      * @throws NotFound
      * @return void
      */
-    public function __construct(Config $config, Cache $cache = null) {
+    public function __construct(Config $config, Cache $cache = null)
+    {
         if (strpos($config->views['path'], '/') === 0) {
             $templatePath = realpath(rtrim($config->views['path'], '/'));
         } else {
@@ -74,7 +76,8 @@ class Template {
      * @param  callable|null $filter
      * @return string
      */
-    public function make(string $templateFile, $bindings = [], callable $filter = null): string {
+    public function make(string $templateFile, $bindings = [], callable $filter = null): string
+    {
         $templateFile = $this->template->path($templateFile);
         $bindings     = (array) $bindings;
 
@@ -111,7 +114,8 @@ class Template {
      * @param  callable|null $filter
      * @return string
      */
-    protected function _load(string $templateFile, callable $filter = null): string {
+    protected function _load(string $templateFile, callable $filter = null): string
+    {
 
         // load template from file
         $content = $this->template->read($templateFile);
@@ -133,7 +137,8 @@ class Template {
      * @param  array  $bindings
      * @return string
      */
-    protected function _populate(string $content, array $bindings): string {
+    protected function _populate(string $content, array $bindings): string
+    {
         $content = (new Processor\Implode())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));
         $content = (new Processor\Assets($this->asset, $this->config, $this->cache))->replace($content, array_replace_recursive($bindings, (array) $this->config->assets['variables']));
         $content = (new Processor\Bindings())->replace($content, array_replace_recursive($bindings, (array) $this->config->views['variables']));

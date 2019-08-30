@@ -16,7 +16,8 @@ use ricwein\shurl\Template\Engine\Functions;
 /**
  * simple Template parser with Twig-like syntax
  */
-class Assets extends Functions {
+class Assets extends Functions
+{
 
     /**
      * @var Config
@@ -33,7 +34,8 @@ class Assets extends Functions {
      * @param Config     $config
      * @param Cache|null $cache
      */
-    public function __construct(File $file, Config $config, Cache $cache = null) {
+    public function __construct(File $file, Config $config, Cache $cache = null)
+    {
         parent::__construct($file);
         $this->config = $config;
         $this->cache  = $cache;
@@ -47,7 +49,8 @@ class Assets extends Functions {
      * @param  array  $bindings
      * @return string
      */
-    protected function replace(string $content, array $bindings = []): string {
+    protected function replace(string $content, array $bindings = []): string
+    {
 
         // include other template files
         $content = preg_replace_callback($this->getRegex('asset(.*)(\|.*)?'), function (array $match) use ($bindings): string {
@@ -83,7 +86,8 @@ class Assets extends Functions {
      * @param  array  $bindings
      * @return string
      */
-    public function parse(string $filename, array $bindings = []): string {
+    public function parse(string $filename, array $bindings = []): string
+    {
         if ($this->cache === null) {
             return $this->parseNew($filename, $bindings);
         }
@@ -112,7 +116,8 @@ class Assets extends Functions {
      * @param  array  $bindings
      * @return string
      */
-    protected function parseNew(string $filename, array $bindings = []): string {
+    protected function parseNew(string $filename, array $bindings = []): string
+    {
 
         /**
          * @var Compiler

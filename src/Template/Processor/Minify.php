@@ -10,7 +10,8 @@ use ricwein\shurl\Template\Engine\Worker;
 /**
  * trims html output
  */
-class Minify extends Worker {
+class Minify extends Worker
+{
 
     /**
      * @var Config
@@ -20,7 +21,8 @@ class Minify extends Worker {
     /**
      * @param Config $config
      */
-    public function __construct(Config $config) {
+    public function __construct(Config $config)
+    {
         $this->config = $config;
     }
 
@@ -38,7 +40,8 @@ class Minify extends Worker {
      * @param  string $content
      * @return string
      */
-    protected function replace(string $content): string {
+    protected function replace(string $content): string
+    {
         if ($this->config->development) {
             return $content;
         }

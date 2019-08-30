@@ -12,7 +12,8 @@ use ricwein\shurl\Core\Cache;
 /**
  * provides HTTP Networking methods
  */
-class Rewrite {
+class Rewrite
+{
 
     /**
      * @var string[]
@@ -39,7 +40,8 @@ class Rewrite {
      * @param URL      $url
      * @param Response $response
      */
-    public function __construct(Config $config, URL $url, Response $response) {
+    public function __construct(Config $config, URL $url, Response $response)
+    {
         $this->config   = $config;
         $this->url      = $url;
         $this->response = $response;
@@ -52,7 +54,8 @@ class Rewrite {
      * @param  bool $permanent
      * @return void
      */
-    public function rewrite(bool $permanent = false) {
+    public function rewrite(bool $permanent = false)
+    {
         if ($permanent) {
             $this->response->status()->setCode(301);
             $this->response->header('Cache-Control', 'max-age=' . $this->config->cache['duration']);
@@ -75,7 +78,8 @@ class Rewrite {
      * @param  Cache|null $cache
      * @return void
      */
-    public function passthrough(Cache $cache = null) {
+    public function passthrough(Cache $cache = null)
+    {
 
         // list of headers which should be keept while passthrough
         $passthroughHeaders = array_flip([
@@ -143,7 +147,8 @@ class Rewrite {
      * @param  string $url
      * @return array
      */
-    protected static function getHeaders(string $url): array {
+    protected static function getHeaders(string $url): array
+    {
         $headers = get_headers($url, 1);
 
         if (!$headers) {

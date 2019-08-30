@@ -7,7 +7,8 @@ namespace ricwein\shurl\Template\Engine;
 /**
  * provide base worker
  */
-abstract class Worker {
+abstract class Worker
+{
 
     /**
      * @var string[]
@@ -23,7 +24,8 @@ abstract class Worker {
      * @param  string $name
      * @return string
      */
-    protected function getRegex(string $name): string {
+    protected function getRegex(string $name): string
+    {
         return implode($name, static::REGEX);
     }
 
@@ -35,7 +37,8 @@ abstract class Worker {
      * @param  string           $string
      * @return string
      */
-    protected function _strReplace($key, $value, string $string): string {
+    protected function _strReplace($key, $value, string $string): string
+    {
 
         // mitigate null-byte attacks
         $key = str_replace(chr(0), '', $key);
@@ -49,7 +52,8 @@ abstract class Worker {
      * @param  array  $args
      * @return mixed
      */
-    public function __call(string $method, array $args) {
+    public function __call(string $method, array $args)
+    {
         return call_user_func_array([$this, $method], $args);
     }
 
@@ -59,7 +63,8 @@ abstract class Worker {
      * @param  array  $args
      * @return mixed
      */
-    public static function __callStatic(string $method, array $args) {
+    public static function __callStatic(string $method, array $args)
+    {
         return call_user_func_array([(new static()), $method], $args);
     }
 }

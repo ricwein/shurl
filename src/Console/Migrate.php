@@ -19,8 +19,10 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 /**
  * provides init cli command
  */
-class Migrate extends Command {
-    protected function configure() {
+class Migrate extends Command
+{
+    protected function configure()
+    {
         $this->setName('migrate');
         $this->setDescription('migrate to current version');
         $this->setHelp('This command migrates the shurl database-structure to current version.');
@@ -38,7 +40,8 @@ class Migrate extends Command {
      * @param InputInterface  $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $config = Config::getInstance();
         $helper = $this->getHelper('question');
 

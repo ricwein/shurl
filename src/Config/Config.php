@@ -13,7 +13,8 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * provides singleton config object
  */
-class Config {
+class Config
+{
 
     /**
      * @var self|null
@@ -143,7 +144,8 @@ class Config {
      * @param  array|null $override
      * @return self
      */
-    public static function getInstance(array $override = null): self {
+    public static function getInstance(array $override = null): self
+    {
         if (static::$__instance === null) {
             static::$__instance = new static();
         }
@@ -156,7 +158,8 @@ class Config {
     /**
      * init new config object
      */
-    private function __construct() {
+    private function __construct()
+    {
         $this->loadConfigFiles($this->__config['imports']);
         $this->resolvePaths();
     }
@@ -167,7 +170,8 @@ class Config {
      * @param  array $loaded
      * @return self
      */
-    protected function loadConfigFiles(array $importList, array $loaded = []) {
+    protected function loadConfigFiles(array $importList, array $loaded = [])
+    {
         foreach ($importList as $import) {
             if (!is_array($import) || !isset($import['resource'])) {
                 continue;
@@ -198,7 +202,8 @@ class Config {
      * @param  string|null $relativePath
      * @return void
      */
-    protected function resolvePaths(string $relativePath = null) {
+    protected function resolvePaths(string $relativePath = null)
+    {
         $this->__config = Helper::array_map_recursive(function ($item) {
             return is_string($item) ? strtr($item, $this->getPaths()) : $item;
         }, $this->__config);
@@ -209,7 +214,8 @@ class Config {
      * @param  string|null $relativePath
      * @return string|null
      */
-    protected function resolvePath(string $filepath, string $relativePath = null) {
+    protected function resolvePath(string $filepath, string $relativePath = null)
+    {
         $filepath = strtr($filepath, $this->getPaths());
 
         if (strpos($filepath, '/') === 0 && false !== $resolved = realpath($filepath)) {
@@ -226,7 +232,8 @@ class Config {
     /**
      * @return array
      */
-    protected function getPaths(): array {
+    protected function getPaths(): array
+    {
         if ($this->paths === null) {
             $this->paths = [];
 
@@ -242,7 +249,8 @@ class Config {
      * @param  string|null $name
      * @return mixed|null
      */
-    public function get(string $name = null) {
+    public function get(string $name = null)
+    {
         if ($name === null) {
             return $this->__config;
         } elseif (array_key_exists($name, $this->__config)) {
@@ -255,7 +263,8 @@ class Config {
      * @param  array $config
      * @return self
      */
-    public function set(array $config) {
+    public function set(array $config)
+    {
         $this->__config = array_replace_recursive($this->__config, $config);
         return $this;
     }
@@ -264,7 +273,8 @@ class Config {
      * @param  string     $name
      * @return mixed|null
      */
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
         return $this->get($name);
     }
 
@@ -273,7 +283,8 @@ class Config {
      * @param  mixed  $value
      * @return void
      */
-    public function __set(string $name, $value) {
+    public function __set(string $name, $value)
+    {
         $this->__config[$name] = $value;
     }
 
@@ -281,7 +292,8 @@ class Config {
      * @param  string $name
      * @return bool
      */
-    public function __isset(string $name): bool {
+    public function __isset(string $name): bool
+    {
         return array_key_exists($name, $this->__config);
     }
 }

@@ -18,8 +18,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * provides init cli command
  */
-class Init extends Command {
-    protected function configure() {
+class Init extends Command
+{
+    protected function configure()
+    {
         $this->setName('init');
         $this->setDescription('init new shurl instance');
         $this->setHelp('This command bootstraps the shurl database-structure.');
@@ -38,7 +40,8 @@ class Init extends Command {
      * sql-comment regex:
      * @see http://blog.ostermiller.org/find-comment
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
 
         // override config, to allow using the templating-engine for sql files
         $config = Config::getInstance(['views' => [

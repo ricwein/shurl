@@ -7,7 +7,8 @@ namespace ricwein\shurl\Template\Engine;
 /**
  * extend base worker for Variables
  */
-abstract class Variables extends Worker {
+abstract class Variables extends Worker
+{
 
     /**
      * @var string[]

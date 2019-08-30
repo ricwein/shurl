@@ -9,13 +9,15 @@ use ricwein\shurl\Template\Engine\Variables;
 /**
  * replaces twig variables with values from arrays or objects
  */
-class Bindings extends Variables {
+class Bindings extends Variables
+{
     /**
      * @param  string            $content
      * @param  array|object|null $bindings varaibles to be replaced
      * @return string
      */
-    protected function replace(string $content, $bindings = null): string {
+    protected function replace(string $content, $bindings = null): string
+    {
         if ($bindings === null) {
             return $content;
         }

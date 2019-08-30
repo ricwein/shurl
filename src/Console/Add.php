@@ -30,6 +30,7 @@ class Add extends Command {
             new InputOption('expires', 't', InputOption::VALUE_OPTIONAL, 'set expiration date for this URL'),
             new InputOption('starts', 'f', InputOption::VALUE_OPTIONAL, 'set start date for this URL'),
             new InputOption('as', null, InputOption::VALUE_REQUIRED, 'choose redirect mode <comment>[available: "' . implode('", "', Rewrite::MODES) . '"]</comment>', 'redirect'),
+            new InputOption('automated', null, InputOption::VALUE_NONE, 'only return the new shortened URL, for scripting and automation purposes'),
         ]);
     }
 
@@ -80,6 +81,12 @@ class Add extends Command {
             $info = $core->addUrl($url, null, $input->getOption('starts'), $input->getOption('expires'), $mode);
         } else {
             $info = $core->addUrl($url, ltrim($slug, '= '), $input->getOption('starts'), $input->getOption('expires'), $mode);
+        }
+
+        /** @var \ricwein\shurl\Redirect\URL $info */
+        if ($input->getOption('automated')) {
+            $output->writeln($info->shortened);
+            return 0;
         }
 
         $output->writeln(PHP_EOL . '<info>Your URL has been added!</info>' . PHP_EOL);

@@ -12,11 +12,13 @@ use ricwein\shurl\Template\Template;
  *
  * @covers Template
  */
-class TemplateTest extends TestCase {
+class TemplateTest extends TestCase
+{
     /**
      * test loading of template files
      */
-    public function testTemplateLoading() {
+    public function testTemplateLoading()
+    {
         $config = Config::getInstance(['views' => [
             'path'  => __DIR__ . '/dummytemplates',
             'route' => ['routeTest' => 'test'],
@@ -40,7 +42,8 @@ class TemplateTest extends TestCase {
     /**
      * test recursive loading of template files
      */
-    public function testTemplateRecursiveLoading() {
+    public function testTemplateRecursiveLoading()
+    {
         $config = Config::getInstance(['views' => [
             'path' => __DIR__ . '/dummytemplates',
         ]]);

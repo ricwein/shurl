@@ -16,7 +16,8 @@ use ricwein\shurl\Template\Template;
 /**
  * shurl frontend renderer
  */
-class Templater {
+class Templater
+{
 
     /**
      * @var Template
@@ -43,7 +44,8 @@ class Templater {
      * @param Request  $request
      * @param Response $response
      */
-    public function __construct(Core $core, Request $request, Response $response) {
+    public function __construct(Core $core, Request $request, Response $response)
+    {
         $this->core     = $core;
         $this->request  = $request;
         $this->response = $response;
@@ -56,7 +58,8 @@ class Templater {
      * @throws \UnexpectedValueException
      * @return void
      */
-    public function view(string $templateFile, $bindings = [], callable $filter = null) {
+    public function view(string $templateFile, $bindings = [], callable $filter = null)
+    {
         if ($this->response->isLocked()) {
             return;
         }
@@ -78,7 +81,8 @@ class Templater {
      * for template-binding
      * @return array
      */
-    protected function fetchVariables(): array {
+    protected function fetchVariables(): array
+    {
         $protocol = ($this->request->isSecure() ? 'https://' : 'http://');
         $host     = $this->request->server()->get('SERVER_NAME');
 
@@ -106,7 +110,8 @@ class Templater {
      * @param  \Throwable $throwable
      * @return void
      */
-    public function error(\Throwable $throwable) {
+    public function error(\Throwable $throwable)
+    {
         if ($this->response->isLocked()) {
             return;
         }
@@ -130,7 +135,8 @@ class Templater {
      * @param  string $assetName
      * @return void
      */
-    public function asset(string $assetName) {
+    public function asset(string $assetName)
+    {
         if ($this->response->isLocked()) {
             return;
         }
@@ -159,7 +165,8 @@ class Templater {
      * @param  int  $count
      * @return void
      */
-    public function welcome(int $count) {
+    public function welcome(int $count)
+    {
         $this->view('welcome', [
             'count' => $count,
         ]);

@@ -9,7 +9,8 @@ use ricwein\shurl\Config\Config;
 /**
  * represents a shurl URL object
  */
-class URL extends \ArrayObject {
+class URL extends \ArrayObject
+{
 
     /**
      * redirect ID
@@ -51,7 +52,8 @@ class URL extends \ArrayObject {
      * @param Config $config
      * @param array  $additionals
      */
-    public function __construct(int $id, string $slug, string $original, string $mode, Config $config, array $additionals = []) {
+    public function __construct(int $id, string $slug, string $original, string $mode, Config $config, array $additionals = [])
+    {
         $mode = strtolower(trim($mode));
         if (!in_array($mode, Rewrite::MODES, true)) {
             throw new \UnexpectedValueException(sprintf('"%s" is not a valid redirect mode', $mode));
@@ -69,7 +71,8 @@ class URL extends \ArrayObject {
     /**
      * @return string
      */
-    public function mode(): string {
+    public function mode(): string
+    {
         return $this->mode;
     }
 
@@ -77,7 +80,8 @@ class URL extends \ArrayObject {
      * @param  string     $name
      * @return mixed|null
      */
-    public function additional(string $name) {
+    public function additional(string $name)
+    {
         if (array_key_exists($name, $this->additionals)) {
             return $this->additionals[$name];
         }
@@ -87,14 +91,16 @@ class URL extends \ArrayObject {
     /**
      * @return string
      */
-    public function hash(): string {
+    public function hash(): string
+    {
         return hash(Config::getInstance()->urls['hash'], $this->original, false);
     }
 
     /**
      * @return string
      */
-    public function __toString(): string {
+    public function __toString(): string
+    {
         return $this->original;
     }
 
@@ -102,7 +108,8 @@ class URL extends \ArrayObject {
      * @param  string     $name
      * @return string|int
      */
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
         if (property_exists($this, $name)) {
             return $this->$name;
         }
@@ -113,7 +120,8 @@ class URL extends \ArrayObject {
      * @param  string $name
      * @return bool
      */
-    public function __isset(string $name): bool {
+    public function __isset(string $name): bool
+    {
         return property_exists($this, $name);
     }
 }

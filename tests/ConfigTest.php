@@ -10,11 +10,13 @@ use ricwein\shurl\Config\Config;
  *
  * @covers Config
  */
-class ConfigTest extends TestCase {
+class ConfigTest extends TestCase
+{
     /**
      * test config getters and setters
      */
-    public function testSetter() {
+    public function testSetter()
+    {
         $config = Config::getInstance();
 
         $this->assertInternalType('array', $config->get());
@@ -29,7 +31,8 @@ class ConfigTest extends TestCase {
     /**
      * testing config singleton usage
      */
-    public function testSingleton() {
+    public function testSingleton()
+    {
         $config = Config::getInstance(['unittest' => true]);
         $this->assertSame(true, $config->unittest);
 

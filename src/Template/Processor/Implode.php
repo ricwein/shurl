@@ -9,13 +9,15 @@ use ricwein\shurl\Template\Engine\Variables;
 /**
  * implode method, allowing array joining with given glue
  */
-class Implode extends Variables {
+class Implode extends Variables
+{
     /**
      * @param  string            $content
      * @param  array|object|null $bindings varaibles to be replaced
      * @return string
      */
-    protected function replace(string $content, $bindings = null): string {
+    protected function replace(string $content, $bindings = null): string
+    {
         if ($bindings === null) {
             return $content;
         }

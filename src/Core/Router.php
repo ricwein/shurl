@@ -15,7 +15,8 @@ use ricwein\shurl\Config\Config;
  * shurl application,
  * using the shurl core to provide
  */
-class Router {
+class Router
+{
 
     /**
      * @var Config
@@ -26,7 +27,8 @@ class Router {
      * init new shurl Core
      * @param Config|null $config
      */
-    public function __construct(Config $config = null) {
+    public function __construct(Config $config = null)
+    {
         if ($config !== null) {
             $this->config = $config;
         } else {
@@ -40,7 +42,8 @@ class Router {
      * @throws \Throwable
      * @return void
      */
-    public function dispatch() {
+    public function dispatch()
+    {
         $klein = new Klein();
 
         // prepare routing

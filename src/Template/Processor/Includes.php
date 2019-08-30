@@ -9,13 +9,15 @@ use ricwein\shurl\Template\Engine\Functions;
 /**
  * simple Template parser with Twig-like syntax
  */
-class Includes extends Functions {
+class Includes extends Functions
+{
     /**
      * @param  string $content
      * @param  int    $currentDepth
      * @return string
      */
-    protected function replace(string $content, int $currentDepth = 0): string {
+    protected function replace(string $content, int $currentDepth = 0): string
+    {
 
         // include other template files
         $content = preg_replace_callback($this->getRegex('include(.*)'), function ($match) use ($currentDepth) {

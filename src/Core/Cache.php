@@ -24,7 +24,8 @@ use Psr\Cache\CacheItemInterface;
  * @method bool deleteItemsByTags(array $tagNames)
  * @method bool deleteItemsByTagsAll(array $tagNames)
  */
-class Cache {
+class Cache
+{
 
     /**
      * @var ExtendedCacheItemPoolInterface
@@ -40,7 +41,8 @@ class Cache {
      * @param string $engine cache-type
      * @param array  $config
      */
-    public function __construct(string $engine, array $config) {
+    public function __construct(string $engine, array $config)
+    {
         if (isset($config['prefix']) && $config['prefix'] !== null) {
             $this->setPrefix($config['prefix']);
         }
@@ -61,7 +63,8 @@ class Cache {
      * @param  string $prefix
      * @return self
      */
-    public function setPrefix(string $prefix = ''): self {
+    public function setPrefix(string $prefix = ''): self
+    {
         $this->_prefix = trim(rtrim((string) $prefix, '._-')) . '.';
         return $this;
     }
@@ -69,7 +72,8 @@ class Cache {
     /**
      * clears object variables
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         unset($this->_cache);
     }
 
@@ -79,7 +83,8 @@ class Cache {
      * @param  array                          $config
      * @return ExtendedCacheItemPoolInterface
      */
-    protected static function _loadDynamicCache(array $config): ExtendedCacheItemPoolInterface {
+    protected static function _loadDynamicCache(array $config): ExtendedCacheItemPoolInterface
+    {
         if (extension_loaded('apcu')) {
             return CacheManager::getInstance('apcu', $config);
         } elseif (ini_get('apc.enabled')) {
@@ -100,7 +105,8 @@ class Cache {
      * @param  string $key
      * @return string
      */
-    protected function prefixString(string $key): string {
+    protected function prefixString(string $key): string
+    {
         return $this->_prefix . str_replace(
             ['{', '}', '(', ')', '/', '\\', '@', ':'],
             ['|', '|', '|', '|', '.', '.', '-', '_'],
@@ -113,7 +119,8 @@ class Cache {
      * @param  bool  $recursive
      * @return array
      */
-    protected function prefixArray(array $keys, bool $recursive = false): array {
+    protected function prefixArray(array $keys, bool $recursive = false): array
+    {
         foreach ($keys as &$key) {
             if (is_string($key)) {
                 $key = $this->prefixString($key);
@@ -127,7 +134,8 @@ class Cache {
     /**
      * @return ExtendedCacheItemPoolInterface
      */
-    public function getDriver(): ExtendedCacheItemPoolInterface {
+    public function getDriver(): ExtendedCacheItemPoolInterface
+    {
         return $this->_cache;
     }
 
@@ -136,7 +144,8 @@ class Cache {
      *
      * @return ExtendedCacheItemInterface
      */
-    public function getItem(string $key): ExtendedCacheItemInterface {
+    public function getItem(string $key): ExtendedCacheItemInterface
+    {
         return $this->_cache->getItem($this->prefixString($key));
     }
 
@@ -145,7 +154,8 @@ class Cache {
      *
      * @return bool
      */
-    public function hasItem(string $key): bool {
+    public function hasItem(string $key): bool
+    {
         return $this->_cache->hasItem($this->prefixString($key));
     }
 
@@ -154,7 +164,8 @@ class Cache {
      *
      * @return CacheItemInterface[]
      */
-    public function getItems(array $keys = []): array {
+    public function getItems(array $keys = []): array
+    {
         return $this->_cache->getItems($this->prefixArray($keys));
     }
 
@@ -163,7 +174,8 @@ class Cache {
      *
      * @return bool
      */
-    public function deleteItem(string $key): bool {
+    public function deleteItem(string $key): bool
+    {
         return $this->_cache->deleteItem($this->prefixString($key));
     }
 
@@ -172,7 +184,8 @@ class Cache {
      *
      * @return bool
      */
-    public function deleteItems(array $keys): bool {
+    public function deleteItems(array $keys): bool
+    {
         return $this->_cache->deleteItems($this->prefixArray($keys));
     }
 
@@ -181,7 +194,8 @@ class Cache {
      *
      * @return self
      */
-    public function setItem(CacheItemInterface $item) {
+    public function setItem(CacheItemInterface $item)
+    {
         $this->_cache->setItem($item);
         return $this;
     }
@@ -191,7 +205,8 @@ class Cache {
      * @param  array  $arguments
      * @return mixed
      */
-    public function __call(string $name, array $arguments) {
+    public function __call(string $name, array $arguments)
+    {
 
             // execute method-call at cache-driver (itemPool)
         if (method_exists($this->_cache, $name)) {

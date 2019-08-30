@@ -18,8 +18,10 @@ use Symfony\Component\Console\Question\Question;
 /**
  * provides add command to bin/shurl cli tool
  */
-class Remove extends Command {
-    protected function configure() {
+class Remove extends Command
+{
+    protected function configure()
+    {
         $this->setName('url:remove');
         $this->setDescription('disables entry');
         $this->setHelp('This command allows to disable a selected URL.');
@@ -33,7 +35,8 @@ class Remove extends Command {
      * @param InputInterface  $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $helper = $this->getHelper('question');
 
         // fetch search filter

@@ -10,7 +10,8 @@ use ricwein\shurl\Exception\NotFound;
 /**
  * provide File interaction methods
  */
-class File {
+class File
+{
 
     /**
      * @var string
@@ -26,7 +27,8 @@ class File {
      * @param string $basepath
      * @param Config $config
      */
-    public function __construct(string $basepath, Config $config) {
+    public function __construct(string $basepath, Config $config)
+    {
         $this->_basepath = rtrim($basepath, '/') . '/';
         $this->_config   = $config;
     }
@@ -37,7 +39,8 @@ class File {
      * @throws NotFound
      * @return string
      */
-    public function read(string $filePath, bool $searchPath = false): string {
+    public function read(string $filePath, bool $searchPath = false): string
+    {
         if ($searchPath) {
             $filePath = $this->path($filePath);
         }
@@ -55,7 +58,8 @@ class File {
      * @throws NotFound
      * @return string
      */
-    public function path(string $filename, bool $dirOnly = false): string {
+    public function path(string $filename, bool $dirOnly = false): string
+    {
         $extension = ltrim($this->_config->views['extension'], '.');
         $fileNames = [];
 
@@ -87,7 +91,8 @@ class File {
      * @throws NotFound
      * @return string
      */
-    public function fullPath(string $filename, bool $dirOnly = false): string {
+    public function fullPath(string $filename, bool $dirOnly = false): string
+    {
         $filepath = $this->path($filename, $dirOnly);
         return $this->_basepath . $filepath;
     }
@@ -96,7 +101,8 @@ class File {
      * @param  string $filename
      * @return string
      */
-    public function hash(string $filename): string {
+    public function hash(string $filename): string
+    {
         if (!$this->_config->views['useFileHash']) {
             return '';
         }
@@ -106,7 +112,8 @@ class File {
     /**
      * @return string
      */
-    public function getBasepath(): string {
+    public function getBasepath(): string
+    {
         return $this->_basepath;
     }
 }

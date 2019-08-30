@@ -7,7 +7,8 @@ namespace ricwein\shurl\Template\Engine;
 /**
  * extend base worker for Functions
  */
-abstract class Functions extends Worker {
+abstract class Functions extends Worker
+{
 
     /**
      * @var File
@@ -17,7 +18,8 @@ abstract class Functions extends Worker {
     /**
      * @param File $file
      */
-    public function __construct(File $file) {
+    public function __construct(File $file)
+    {
         $this->file = $file;
     }
 

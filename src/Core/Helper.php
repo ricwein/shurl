@@ -7,13 +7,15 @@ namespace ricwein\shurl\Core;
 /**
  * provides static helper methods for shurl
  */
-class Helper {
+class Helper
+{
     /**
      * @param  callable $callback
      * @param  array    $array
      * @return array
      */
-    public static function array_map_recursive(callable $callback, array $array): array {
+    public static function array_map_recursive(callable $callback, array $array): array
+    {
         $resultArray = is_array($array) ? $array : get_object_vars($array);
 
         foreach ($resultArray as $key => $val) {

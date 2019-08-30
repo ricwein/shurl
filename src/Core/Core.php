@@ -24,8 +24,11 @@ use ricwein\shurl\Redirect\URL;
 
 /**
  * shurl core class
+ *
+ * @property QueryBuilderHandler $db
  */
-class Core {
+class Core
+{
 
     /**
      * @var Config
@@ -51,7 +54,8 @@ class Core {
      * init new shurl Core
      * @param Config|null $config
      */
-    public function __construct(Config $config = null) {
+    public function __construct(Config $config = null)
+    {
 
         // allocate config instance
         if ($config === null) {
@@ -84,7 +88,8 @@ class Core {
      * @throws \Throwable
      * @return void
      */
-    public function redirect(URL $url, Response $response) {
+    public function redirect(URL $url, Response $response)
+    {
         $rewrite = new Rewrite($this->config, $url, $response);
         switch ($url->mode()) {
             case 'passthrough':$rewrite->passthrough($this->config->redirect['cachePassthrough'] ? $this->cache : null);
@@ -99,7 +104,8 @@ class Core {
      * @param  \Throwable $throwable
      * @return void
      */
-    public function logException(\Throwable $throwable) {
+    public function logException(\Throwable $throwable)
+    {
         if ($this->config->development) {
             throw $throwable;
         }
@@ -114,7 +120,8 @@ class Core {
     /**
      * @return int
      */
-    public function getUrlCount(): int {
+    public function getUrlCount(): int
+    {
         if ($this->cache === null) {
             return $this->countUrls();
         }
@@ -134,7 +141,8 @@ class Core {
     /**
      * @return int
      */
-    protected function countUrls(): int {
+    protected function countUrls(): int
+    {
         $query = $this->db->table('redirects');
         $query->select([$query->raw('COUNT(*) as count')]);
         $now = new \DateTime();
@@ -163,7 +171,8 @@ class Core {
      * @throws \UnexpectedValueException
      * @return URL
      */
-    public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, string $redirectMode): URL {
+    public function addUrl(string $url, string $slug = null, string $starts = null, string $expires = null, string $redirectMode): URL
+    {
         $url          = trim($url);
         $now          = new \DateTime();
         $redirectMode = strtolower(trim($redirectMode));
@@ -227,7 +236,8 @@ class Core {
      * @throws \UnexpectedValueException
      * @return URL
      */
-    public function getUrl(string $slug): URL {
+    public function getUrl(string $slug): URL
+    {
 
         // skipt cache, and fetch directly from database
         if ($this->cache === null) {
@@ -256,7 +266,8 @@ class Core {
      * @throws NotFound
      * @return URL
      */
-    protected function fetchURL(string $slug): URL {
+    protected function fetchURL(string $slug): URL
+    {
         $query = $this->db->table('redirects');
         $now   = new \DateTime();
 
@@ -288,7 +299,8 @@ class Core {
      * @param  Request $request
      * @return string
      */
-    public function getBaseURL(Request $request): string {
+    public function getBaseURL(Request $request): string
+    {
         $schema = ($request->isSecure() ? 'https' : 'http');
 
         if (false === $host = $request->server()->get('HTTP_HOST', false)) {
@@ -311,7 +323,8 @@ class Core {
      * @param  Request $request
      * @return self
      */
-    public function track(URL $url, Request $request): self {
+    public function track(URL $url, Request $request): self
+    {
         if (!$this->config->tracking['enabled']) {
             return $this;
         }
@@ -361,7 +374,8 @@ class Core {
      * @param  string $name
      * @return mixed
      */
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
 
         // exceptional handling for lazy db loading
         if ($name === 'db') {
@@ -378,7 +392,8 @@ class Core {
      * @param  string $name
      * @return bool
      */
-    public function __isset(string $name): bool {
+    public function __isset(string $name): bool
+    {
         return property_exists($this, $name);
     }
 
@@ -387,7 +402,8 @@ class Core {
      * @throws \Exception
      * @return QueryBuilderHandler
      */
-    protected function getDB(): QueryBuilderHandler {
+    protected function getDB(): QueryBuilderHandler
+    {
         if ($this->pixie !== null) {
             return $this->pixie;
         }

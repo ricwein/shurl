@@ -10,7 +10,7 @@ $application = new Application('shurl console', file_get_contents(__DIR__ . '/..
 
 $application->add(new Console\Add());
 $application->add(new Console\Remove());
-$application->add(new Console\Show());
+$application->add(new Console\Listing());
 $application->add(new Console\Init());
 $application->add(new Console\Migrate());
 
